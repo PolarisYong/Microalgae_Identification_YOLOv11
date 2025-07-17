@@ -7,7 +7,8 @@ from tqdm import tqdm
 import glob
 import pandas as pd
 
-# 合并了excel输出和图片输出
+# 合并了excel输出和图片输出 03
+# 对于单个目标检测出多个掩膜，将掩膜合并
 # 加载预训练模型
 model = YOLO(r'E:\pythonProject\Microalgae_Identification_YOLOv11\runs\segment\train\weights\best.pt')
 
