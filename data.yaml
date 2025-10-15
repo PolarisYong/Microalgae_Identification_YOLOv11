@@ -2,7 +2,7 @@ path: E:\pythonProject\Microalgae_Identification_YOLOv11\dataset  # dataset root
 train: images/train  # train images (relative to 'path') 128 images
 val: images/val  # val images (relative to 'path') 128 images
 nc: 1  # number of classes
-name: ['Mcrioalgae_0617']  # dataset name
+name: ['Mcrioalgae']  # dataset name
 
 # 实例分割专用配置
 masks: true  # 启用掩码训练

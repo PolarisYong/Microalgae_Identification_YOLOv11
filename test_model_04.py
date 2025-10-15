@@ -13,8 +13,8 @@ import pandas as pd
 model = YOLO(r'E:\pythonProject\Microalgae_Identification_YOLOv11\runs\segment\train\weights\best.pt')
 
 # 图片实际尺寸（微米），假设所有图片尺寸一致
-actual_width = 275
-actual_height = 230
+actual_width = 44.3
+actual_height = 42.8
 
 
 # 定义中文显示函数
@@ -412,12 +412,12 @@ def process_folder(folder_path):
 
 
 # 指定要处理的文件夹路径
-# folder_path = r'F:\BaiduNetdiskDownload\target\raw_microalgae_photoes\002'
-# process_folder(folder_path)
+folder_path = r'F:\Microalgae Photoes\20251002\Processed\001_L100_20\IMG001x001'
+process_folder(folder_path)
 
 # 示例: 处理多个子文件夹（若有需要可取消注释使用）
-root_folder = r'F:\BaiduNetdiskDownload\target\raw_microalgae_photoes'
-for subdir in os.listdir(root_folder):
-    subfolder_path = os.path.join(root_folder, subdir)
-    if os.path.isdir(subfolder_path):
-        process_folder(subfolder_path)
+# root_folder = r'F:\BaiduNetdiskDownload\target\raw_microalgae_photoes'
+# for subdir in os.listdir(root_folder):
+#     subfolder_path = os.path.join(root_folder, subdir)
+#     if os.path.isdir(subfolder_path):
+#         process_folder(subfolder_path)
