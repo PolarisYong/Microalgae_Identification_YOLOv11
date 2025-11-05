@@ -47,10 +47,15 @@ def merge_excel_sheets(root_dir, output_file):
                     print(f"警告: {xlsx_file} 缺少必要列 {missing_columns}，已跳过")
                     continue
 
-                # 检查"目标数量"列的最大值是否超过20
+                # 检查"目标数量"列的最大值是否超过40
                 max_target = df["目标数量"].max()
-                if max_target <= 20:
-                    print(f"跳过 {xlsx_file}: 目标数量最大值为 {max_target}，未超过20")
+                if max_target <= 3:
+                    print(f"跳过 {xlsx_file}: 目标数量最大值为 {max_target}，未超过40")
+                    continue
+
+                # 新增筛选条件：检查"目标数量"列的第一个数字是否为0
+                if (df["目标数量"] == 0).any():
+                    print(f"跳过 {xlsx_file}: 目标数量列中存在0值")
                     continue
 
                 # 获取文件名（不含扩展名）作为新的页签名称
@@ -68,10 +73,10 @@ def merge_excel_sheets(root_dir, output_file):
 
 if __name__ == "__main__":
     # 请在此处修改为您的根文件夹路径
-    root_directory = r"F:\Microalgae_Photoes\20251002\Processed\001_L100_20"
+    root_directory = r"F:\Microalgae_Photoes\20251104\CH6"
 
     # 输出文件路径和名称
-    output_excel = r"F:\Microalgae_Photoes\20251002\Processed\001_L100_20\CH1.xlsx"
+    output_excel = r"F:\Microalgae_Photoes\20251104\数据处理结果\原始数据\CH6.xlsx"
 
     # 执行合并操作
     merge_excel_sheets(root_directory, output_excel)

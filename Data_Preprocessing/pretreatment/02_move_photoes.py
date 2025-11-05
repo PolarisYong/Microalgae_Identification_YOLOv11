@@ -3,7 +3,7 @@ import re
 import shutil
 
 
-def organize_images(source_dir, target_parent):
+def organize_images(source_dir, target_parent, channel_num):
     """
     整理图片文件：将同名图片放入同一文件夹，并按源文件夹序号重命名
 
@@ -25,7 +25,7 @@ def organize_images(source_dir, target_parent):
                 print(f"跳过不符合命名规则的文件夹: {folder}")
                 continue
 
-            source_num = match.group(1)
+            source_num = match.group(1).lstrip('0') or '0'
             print(f"\n处理文件夹: {folder} (编号: {source_num})")
 
             # 检查image子文件夹
@@ -38,14 +38,20 @@ def organize_images(source_dir, target_parent):
             for img_file in os.listdir(image_dir):
                 if not img_file.lower().endswith('.tif'):
                     continue
-
+                pattern = r'IMG\d+x(\d{3})\.tif$'
+                match = re.match(pattern, img_file)
+                if match:
+                    chamber_num = match.group(1).lstrip('0') or '0'
+                else:
+                    chamber_num = "error"
+                # 构建新文件名
+                new_filename = f"CH{channel_num}_CB{chamber_num}_H{source_num}.tif"
                 # 构建目标路径
                 folder_name = os.path.splitext(img_file)[0]
                 target_folder = os.path.join(target_parent, folder_name)
                 # 确保目标文件夹存在（关键修正：每次处理都检查并创建）
                 os.makedirs(target_folder, exist_ok=True)
 
-                new_filename = f"{source_num}_{img_file}"
                 source_path = os.path.join(image_dir, img_file)
                 target_path = os.path.join(target_folder, new_filename)
 
@@ -58,15 +64,16 @@ def organize_images(source_dir, target_parent):
 
 if __name__ == "__main__":
     # 源文件夹路径（包含99个子文件夹的目录）
-    source_directory = r"F:\Microalgae Photoes\20251002\微观实验 - 不同氨氮浓度_25-09-26批次\Processed\006_L100_500"  # 替换为实际源目录路径
+    source_directory = r"F:\Microalgae_Photoes\20251104\20251025-L100_300-400-500.COM.3"  # 替换为实际源目录路径
 
     # 目标父目录（将在其中创建以图片名为基础的子文件夹）
-    target_parent_directory = r"F:\Microalgae Photoes\20251002\微观实验 - 不同氨氮浓度_25-09-26批次\Processed\006_L100_500\006_L100_500_target"  # 替换为实际目标目录路径
+    target_parent_directory = r"F:\Microalgae_Photoes\20251104\CH6"  # 替换为实际目标目录路径
 
+    channel_num = "6"
     # 验证源文件夹
     if not os.path.exists(source_directory) or not os.path.isdir(source_directory):
         print(f"错误: 源文件夹不存在或不是有效的目录 - {source_directory}")
     else:
         # 创建目标父目录（如果不存在）
         os.makedirs(target_parent_directory, exist_ok=True)
-        organize_images(source_directory, target_parent_directory)
+        organize_images(source_directory, target_parent_directory, channel_num)
