@@ -473,7 +473,7 @@ def process_folder(folder_path):
 # process_folder(folder_path)
 
 # 示例: 处理多个子文件夹（若有需要可取消注释使用）
-root_folder = r'F:\Microalgae_Photoes\20251104\CH6'
+root_folder = r'F:\Microalgae_Photoes\20260214\CH2'
 for subdir in os.listdir(root_folder):
     subfolder_path = os.path.join(root_folder, subdir)
     if os.path.isdir(subfolder_path):

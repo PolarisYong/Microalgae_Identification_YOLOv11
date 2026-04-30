@@ -2,11 +2,12 @@ import pandas as pd
 import openpyxl
 
 
-def standardize_cell_data(input_file, output_file):
+def standardize_cell_data(input_file, output_file, skip_sheet_name):
     # 读取Excel文件，获取所有页签名称
     excel_file = pd.ExcelFile(input_file)
     sheet_names = excel_file.sheet_names
-
+    # 过滤掉需要跳过的页签
+    sheet_names = [name for name in sheet_names if name not in skip_sheet_name]
     # 存储所有处理后的sheet数据，用于后续汇总
     processed_sheets = []
 
@@ -38,14 +39,14 @@ def standardize_cell_data(input_file, output_file):
                 df['目标数量'] = 0.0
                 print(f"ℹ️  提示：页签【{sheet}】'目标数量'初始值为0，标准化后所有值设为0")
             else:
-                df['目标数量'] = (df['目标数量'] / initial_count).round(4)
+                df['目标数量'] = (df['目标数量'] / initial_count).round(2)
 
             # 总面积列标准化
             if initial_area == 0:
                 df['总面积(μm²)'] = 0.0
                 print(f"ℹ️  提示：页签【{sheet}】'总面积(μm²)'初始值为0，标准化后所有值设为0")
             else:
-                df['总面积(μm²)'] = (df['总面积(μm²)'] / initial_area).round(4)
+                df['总面积(μm²)'] = (df['总面积(μm²)'] / initial_area).round(2)
 
             # 新增：计算相对平均细胞面积
             if initial_avg_area == 0:
@@ -55,7 +56,7 @@ def standardize_cell_data(input_file, output_file):
                 # 计算当前平均面积与初始平均面积的比值
                 # 使用where避免除以0错误
                 current_avg_area = df_tmp['总面积(μm²)'] / df_tmp['目标数量'].where(df['目标数量'] != 0, 1)
-                df['相对平均细胞面积'] = (current_avg_area / initial_avg_area).round(4)
+                df['相对平均细胞面积'] = (current_avg_area / initial_avg_area).round(2)
 
             # 将标准化后的数据写入新Excel的对应页签
             df.to_excel(writer, sheet_name=sheet, index=False)
@@ -85,10 +86,11 @@ def standardize_cell_data(input_file, output_file):
 
 
 # 配置文件路径
-INPUT_EXCEL = r"F:\Microalgae_Photoes\20251104\数据处理结果\原始数据\CH6.xlsx"  # 原始数据文件路径
-OUTPUT_EXCEL = r"F:\Microalgae_Photoes\20251104\数据处理结果\标准化数据\CH6_标准化.xlsx"
+INPUT_EXCEL = r"F:\Microalgae_Photoes\summary\L100_20\simulate.xlsx"  # 原始数据文件路径
+OUTPUT_EXCEL = r"F:\Microalgae_Photoes\summary\L100_20\simulate_标准化.xlsx"
 # OUTPUT_EXCEL = INPUT_EXCEL[:-5] + "_标准化.xlsx"
 
 # 执行标准化
 if __name__ == "__main__":
-    standardize_cell_data(INPUT_EXCEL, OUTPUT_EXCEL)
+    skip_sheet = {"数据汇总", "← 👈25-9-26批  25-10-25批👉→", "👉→理论预测 9组"}
+    standardize_cell_data(INPUT_EXCEL, OUTPUT_EXCEL, skip_sheet)

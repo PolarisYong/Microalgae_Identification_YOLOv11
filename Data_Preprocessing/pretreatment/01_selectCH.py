@@ -118,5 +118,5 @@ def main(photoes_dir):
 
 if __name__ == "__main__":
     # 请将此处修改为你的Photoes文件夹实际路径
-    photoes_directory = r"F:\Microalgae_Photoes\20251104 - 副本"
+    photoes_directory = r"F:\Microalgae_Photoes\20260214"
     main(photoes_directory)

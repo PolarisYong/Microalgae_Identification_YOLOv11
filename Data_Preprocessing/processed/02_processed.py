@@ -7,6 +7,7 @@ import openpyxl
 from openpyxl.drawing.image import Image
 import io
 from matplotlib import rcParams
+from openpyxl.styles import numbers  # 需导入numbers模块
 
 # ---------------------- 全局字体配置 ----------------------
 rcParams["font.family"] = ["Times New Roman", "serif"]
@@ -37,13 +38,13 @@ def calculate_growth_phases(t, mu_max, K, N0):
     slope = np.insert(slope, 0, 0)
 
     max_slope = np.max(slope) if np.max(slope) > 0 else 1e-6
-    threshold = 0.05 * max_slope
+    threshold = 0.2 * max_slope
 
     phase_flags = []
     for i in range(len(t)):
         current_slope = slope[i]
         current_N = N_t[i]
-        if current_slope < threshold and abs(current_N - K) / K < 0.05:
+        if current_slope < threshold and abs(current_N - K) / K < 0.1:
             phase_flags.append("稳定期")
         elif current_slope >= threshold:
             phase_flags.append("对数期")
@@ -97,8 +98,8 @@ def generate_trendline(x, y, degree=2):
 
 # ---------------------- 3. 数据读取与处理主函数 ----------------------
 def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_results.xlsx",
-                        min_data_points=5, nitrogen_concentration="test"):
-    skip_sheet = "数据汇总"
+                        min_data_points=5, nitrogen_concentration="test", skip_sheet_name={"数据汇总"}, valid_num=96):
+    skip_sheet = skip_sheet_name
     wb_original = openpyxl.load_workbook(excel_path)
     sheet_names = wb_original.sheetnames
     individual_summary = []
@@ -109,14 +110,15 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
 
     # 第一步：处理各页签并进行单独拟合
     for sheet in sheet_names:
-        if sheet == skip_sheet:
+        if sheet in skip_sheet:
             print(f"跳过页签: {sheet}")
             continue
+
         print(f"正在处理页签: {sheet}")
         plt_name = nitrogen_concentration + "_" + sheet[4:]
         ws = wb_original[sheet]
         try:
-            df = pd.read_excel(excel_path, sheet_name=sheet)
+            df = pd.read_excel(excel_path, sheet_name=sheet,nrows=valid_num+1)
             required_columns = ["目标数量", "总面积(μm²)", "相对平均细胞面积"]
             missing_cols = [col for col in required_columns if col not in df.columns]
             if missing_cols:
@@ -188,9 +190,9 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
                 ss_tot = np.sum((cell_counts - np.mean(cell_counts)) ** 2)
                 r2 = 1 - (ss_res / ss_tot) if ss_tot != 0 else np.nan
                 t_d = np.log(2) / mu_max_fit if mu_max_fit != 0 else np.nan
-                F_last_cell_number = df['目标数量'].iloc[-1]
-                total_count = len(df['目标数量'])
-                growth_rate = F_last_cell_number / total_count if (F_last_cell_number is not None and not np.isnan(F_last_cell_number)) else np.nan
+                F_last_cell_number = df['目标数量'].iloc[valid_num-1]
+                # total_count = len(df['目标数量'])
+                growth_rate = F_last_cell_number / valid_num if (F_last_cell_number is not None and not np.isnan(F_last_cell_number)) else np.nan
                 phase_duration, _ = calculate_growth_phases(t, mu_max_fit, K_fit, N0_fit)
                 lag_duration = phase_duration["滞后期时长(h)"]
                 log_duration = phase_duration["对数期时长(h)"]
@@ -199,12 +201,12 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
                 individual_summary.append({
                     "腔室名称": sheet,
                     "最大比生长速率μmax (h^-1)": round(mu_max_fit, 4),
-                    "环境容纳量K (个/腔室)": round(K_fit, 4),
-                    "初始细胞数量N0 (个/腔室)": round(N0_fit, 4),
-                    "拟合优度R²": round(r2, 2),
-                    "平均细胞周期T_d(h)": round(t_d, 4) if not np.isnan(t_d) else np.nan,
-                    "增殖倍数 F": round(F_last_cell_number, 4) if not np.isnan(F_last_cell_number) else np.nan,
-                    "生长效率 η (1/增殖倍数)": round(growth_rate, 4) if not np.isnan(growth_rate) else np.nan,
+                    "环境容纳量K (个/腔室)": round(K_fit, 2),
+                    "初始细胞数量N0 (个/腔室)": round(N0_fit, 2),
+                    "拟合优度R²": round(r2, 4),
+                    "平均细胞周期T_d(h)": round(t_d, 2) if not np.isnan(t_d) else np.nan,
+                    "增殖倍数 F": round(F_last_cell_number, 2) if not np.isnan(F_last_cell_number) else np.nan,
+                    "生长效率 η (1/增殖倍数)": round(growth_rate, 3) if not np.isnan(growth_rate) else np.nan,
                     "滞后期时长(h)": lag_duration,
                     "对数期时长(h)": log_duration,
                     "稳定期时长(h)": stable_duration
@@ -213,7 +215,7 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
 
                 plt.figure(figsize=(10, 6))
                 plt.scatter(t, cell_counts, label="Actual data", color="blue", alpha=0.6)
-                plt.plot(t, y_fit, label="Fitted curve", color="#F2BA02", linewidth=2)
+                plt.plot(t, y_fit, label="Fitted curve", color="red", linewidth=2)
                 ax = plt.gca()
                 ax.set_xlabel("Cultivation time (h)")
                 ax.set_ylabel("Relative cell number (normalized to 0 h)")
@@ -222,10 +224,10 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
                 ax.xaxis.set_minor_locator(MultipleLocator(3))
                 y_tick_interval = (ax.get_yticks()[1] - ax.get_yticks()[0]) if len(ax.get_yticks()) > 1 else 1
                 ax.yaxis.set_minor_locator(MultipleLocator(y_tick_interval / 5))
-                param_text = (f"$\it{{μ}}_{{\mathrm{{max}}}}$= {round(mu_max_fit, 2)} h⁻¹\n"
+                param_text = (f"$\it{{μ}}_{{\mathrm{{max}}}}$= {round(mu_max_fit, 4)} h⁻¹\n"
                               f"$\it{{K}}$ = {round(K_fit, 2)}\n"
                               f"$\it{{N}}_{{0}}$ = {round(N0_fit, 2)}\n"
-                              f"R² = {round(r2, 2)}")
+                              f"R² = {round(r2, 4)}")
                 plt.text(0.05, 0.95, param_text, transform=ax.transAxes,
                          verticalalignment='top', fontsize=20,
                          bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
@@ -248,11 +250,11 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
                 ws.cell(row=5, column=param_col_start).value = "拟合优度R²"
                 ws.cell(row=5, column=param_col_start + 1).value = round(r2, 4)
                 ws.cell(row=6, column=param_col_start).value = "平均细胞周期T_d(h)"
-                ws.cell(row=6, column=param_col_start + 1).value = round(t_d, 4) if not np.isnan(t_d) else np.nan
+                ws.cell(row=6, column=param_col_start + 1).value = round(t_d, 2) if not np.isnan(t_d) else np.nan
                 ws.cell(row=7, column=param_col_start).value = "增殖倍数 F"
-                ws.cell(row=7, column=param_col_start + 1).value = round(F_last_cell_number, 4) if not np.isnan(F_last_cell_number) else np.nan
+                ws.cell(row=7, column=param_col_start + 1).value = round(F_last_cell_number, 2) if not np.isnan(F_last_cell_number) else np.nan
                 ws.cell(row=8, column=param_col_start).value = "生长效率 η (1/增殖倍数)"
-                ws.cell(row=8, column=param_col_start + 1).value = round(growth_rate, 4) if not np.isnan(
+                ws.cell(row=8, column=param_col_start + 1).value = round(growth_rate, 3) if not np.isnan(
                     growth_rate) else np.nan
                 ws.cell(row=9, column=param_col_start).value = "滞后期时长(h)"
                 ws.cell(row=9, column=param_col_start + 1).value = lag_duration
@@ -302,7 +304,7 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
     merged_img_buffer = None
     if len(merged_t) >= min_data_points * 2 and len(valid_sheets) >= 2:
         original_merged_data = [
-            {"sheet": d["sheet"], "t": d["t"], "cell_counts": d["cell_counts"]}
+            {"sheet": d["sheet"], "t": d["t"][:valid_num], "cell_counts": d["cell_counts"][:valid_num]}
             for d in individual_data
         ]
         current_valid_sheets = [d["sheet"] for d in original_merged_data]
@@ -391,7 +393,7 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
             sorted_t = np.sort(merged_t)
             plt.plot(sorted_t, modified_logistic_model(sorted_t, merged_params["mu_max"], merged_params["K"],
                                                        merged_params["N0"]),
-                     label="Merged fitted curve", color="red", linewidth=2)
+                     label="Merged fitted curve", color="#F2BA02", linewidth=2)
             ax = plt.gca()
             ax.set_xlabel("Cultivation time (h)")
             ax.set_ylabel("Relative cell number (normalized to 0 h)")
@@ -403,10 +405,10 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
             ax.yaxis.set_minor_locator(MultipleLocator(y_tick_interval / 5))
             merged_phase_duration, _ = calculate_growth_phases(sorted_t, merged_params["mu_max"], merged_params["K"],
                                                                merged_params["N0"])
-            param_text = (f"$\it{{μ}}_{{\mathrm{{max}}}}$ = {merged_params['mu_max']:.2f} h⁻¹\n"
+            param_text = (f"$\it{{μ}}_{{\mathrm{{max}}}}$ = {merged_params['mu_max']:.4f} h⁻¹\n"
                           f"$\it{{K}}$ = {merged_params['K']:.2f}\n"
                           f"$\it{{N}}_{{0}}$ = {merged_params['N0']:.2f}\n"
-                          f"R² = {merged_params['r2']:.2f}")
+                          f"R² = {merged_params['r2']:.4f}")
             plt.text(0.05, 0.95, param_text, transform=ax.transAxes,
                      verticalalignment='top', fontsize=20, bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
             plt.legend()
@@ -491,10 +493,10 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
         param_rows = {
             "参与拟合的页签数量": len(merged_params["valid_sheets"]),
             "总数据点数量": len(merged_t),
-            "最大比生长速率μmax (h^-1)": round(merged_params["mu_max"], 6),
-            "环境容纳量K (个/腔室)": round(merged_params["K"], 6),
-            "初始细胞数量N0 (个/腔室)": round(merged_params["N0"], 6),
-            "拟合优度R²": round(merged_params["r2"], 6),
+            "最大比生长速率μmax (h^-1)": round(merged_params["mu_max"], 4),
+            "环境容纳量K (个/腔室)": round(merged_params["K"], 2),
+            "初始细胞数量N0 (个/腔室)": round(merged_params["N0"], 2),
+            "拟合优度R²": round(merged_params["r2"], 4),
             "滞后期时长(h)": merged_phase_duration["滞后期时长(h)"],
             "对数期时长(h)": merged_phase_duration["对数期时长(h)"],
             "稳定期时长(h)": merged_phase_duration["稳定期时长(h)"]
@@ -523,7 +525,7 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
             plt.scatter(t_data, counts_data, label=f"{plt_name} actual data", color="blue", alpha=0.6)
             merged_curve = modified_logistic_model(t_data, merged_params["mu_max"], merged_params["K"],
                                                    merged_params["N0"])
-            plt.plot(t_data, merged_curve, label="Merged fitted curve", color="red", linewidth=2)
+            plt.plot(t_data, merged_curve, label="Merged fitted curve", color="#F2BA02", linewidth=2)
             ax = plt.gca()
             ax.set_xlabel("Cultivation time (h)")
             ax.set_ylabel("Relative cell number (normalized to 0 h)")
@@ -534,10 +536,10 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
             ax.yaxis.set_minor_locator(MultipleLocator(y_tick_interval / 5))
             merged_phase_duration, _ = calculate_growth_phases(t_data, merged_params["mu_max"], merged_params["K"],
                                                                merged_params["N0"])
-            param_text = (f"$\it{{μ}}_{{\mathrm{{max}}}}$ = {merged_params['mu_max']:.2f} h⁻¹\n"
+            param_text = (f"$\it{{μ}}_{{\mathrm{{max}}}}$ = {merged_params['mu_max']:.4f} h⁻¹\n"
                           f"$\it{{K}}$ = {merged_params['K']:.2f}\n"
                           f"$\it{{N}}_{{0}}$ = {merged_params['N0']:.2f}\n"
-                          f"R² = {merged_params['r2']:.2f}")
+                          f"R² = {merged_params['r2']:.4f}")
             plt.text(0.05, 0.95, param_text, transform=ax.transAxes,
                      verticalalignment='top', fontsize=20, bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
             plt.legend()
@@ -559,10 +561,10 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
     # 第六步：为每个有效页签添加额外的2个图
     for sheet_data in individual_data:
         sheet_name = sheet_data["sheet"]
-        t_data = sheet_data["t"]
-        cell_counts = sheet_data["cell_counts"]
-        area = sheet_data["area"]
-        avg_cell_area = sheet_data["avg_cell_area"]
+        t_data = sheet_data["t"][:valid_num]
+        cell_counts = sheet_data["cell_counts"][:valid_num]
+        area = sheet_data["area"][:valid_num]
+        avg_cell_area = sheet_data["avg_cell_area"][:valid_num]
         try:
             ws = wb_original[sheet_name]
             plt_title = nitrogen_concentration + "_" + sheet_name[4:]
@@ -623,9 +625,9 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
         all_avg_area = []
         for sheet_data in individual_data:
             if sheet_data["sheet"] in merged_params["valid_sheets"]:
-                all_t.extend(sheet_data["t"])
-                all_area.extend(sheet_data["area"])
-                all_avg_area.extend(sheet_data["avg_cell_area"])
+                all_t.extend(sheet_data["t"][:valid_num])
+                all_area.extend(sheet_data["area"][:valid_num])
+                all_avg_area.extend(sheet_data["avg_cell_area"][:valid_num])
 
         # 1. 创建总面积汇总散点图
         plt.figure(figsize=(12, 7))
@@ -633,7 +635,7 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
         ax = plt.gca()
         ax.set_xlabel("Cultivation time (h)")
         ax.set_ylabel("Relative total cell area (normalized to 0 h)")
-        ax.set_title(f"Relative total area distribution (merged data, {len(merged_params['valid_sheets'])} chambers, NH$_4^+$-N={nitrogen_concentration})")
+        ax.set_title(f"Relative total area (merged data, {len(merged_params['valid_sheets'])} chambers, NH$_4^+$-N={nitrogen_concentration})")
         ax.xaxis.set_major_locator(MultipleLocator(12))
         ax.xaxis.set_minor_locator(MultipleLocator(3))
         y_tick_interval = (ax.get_yticks()[1] - ax.get_yticks()[0]) if len(ax.get_yticks()) > 1 else 1
@@ -651,7 +653,7 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
         ax = plt.gca()
         ax.set_xlabel("Cultivation time (h)")
         ax.set_ylabel("Relative average cell area (normalized to 0 h)")
-        ax.set_title(f"Relative average cell area distribution (merged data, {len(merged_params['valid_sheets'])} chambers, NH$_4^+$-N={nitrogen_concentration})")
+        ax.set_title(f"Relative average cell area (merged data, {len(merged_params['valid_sheets'])} chambers, NH$_4^+$-N={nitrogen_concentration})")
         ax.xaxis.set_major_locator(MultipleLocator(12))
         ax.xaxis.set_minor_locator(MultipleLocator(3))
         y_tick_interval = (ax.get_yticks()[1] - ax.get_yticks()[0]) if len(ax.get_yticks()) > 1 else 1
@@ -681,6 +683,46 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
 
         print(f"已在汇总结果页签添加2个汇总散点图")
 
+    # 第八步：对所有有效页签，将“总面积(μm²)”、“相对平均细胞面积”保留小数点后两位
+    for sheet_data in individual_data:
+        sheet_name = sheet_data["sheet"]
+        try:
+            ws = wb_original[sheet_name]
+            # 获取列标题所在行（假设标题在第1行）
+            title_row = 1
+            area_col = None
+            avg_area_col = None
+
+            # 查找列标题对应的列索引
+            for col in range(1, ws.max_column + 1):
+                cell_value = ws.cell(row=title_row, column=col).value
+                if cell_value == "总面积(μm²)":
+                    area_col = col
+                elif cell_value == "相对平均细胞面积":
+                    avg_area_col = col
+                if area_col and avg_area_col:
+                    break
+
+            # 如果找到对应的列，格式化数据
+            if area_col:
+                # 从第2行开始处理数据行（假设标题在第1行）
+                for row in range(2, ws.max_row + 1):
+                    cell = ws.cell(row=row, column=area_col)
+                    if cell.value is not None and isinstance(cell.value, (int, float)):
+                        cell.value = round(cell.value, 2)
+                        cell.number_format = numbers.FORMAT_NUMBER_00  # 设置为两位小数格式
+
+            if avg_area_col:
+                for row in range(2, ws.max_row + 1):
+                    cell = ws.cell(row=row, column=avg_area_col)
+                    if cell.value is not None and isinstance(cell.value, (int, float)):
+                        cell.value = round(cell.value, 2)
+                        cell.number_format = numbers.FORMAT_NUMBER_00  # 设置为两位小数格式
+
+            print(f"已为 {sheet_name} 格式化面积数据为两位小数")
+        except Exception as e:
+            print(f"格式化 {sheet_name} 面积数据时出错：{str(e)}")
+
     # 保存最终结果
     wb_original.save(result_excel_path)
     wb_original.close()
@@ -690,15 +732,19 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
 
 # ---------------------- 脚本执行入口 ----------------------
 if __name__ == "__main__":
-    EXCEL_FILE_PATH = r"F:\Microalgae_Photoes\20251104\数据处理结果\标准化数据\CH6_标准化.xlsx"
+    EXCEL_FILE_PATH = r"F:\Microalgae_Photoes\simulate\L100_300\L100_300_8.xlsx"
     # RESULT_EXCEL_PATH = EXCEL_FILE_PATH[:-5] + "_数据处理.xlsx"
-    RESULT_EXCEL_PATH = r"F:\Microalgae_Photoes\20251104\数据处理结果\最终结果\L100_500.xlsx"
-    Nitrogen = "500 mg/L"
+    RESULT_EXCEL_PATH = r"F:\Microalgae_Photoes\simulate\L100_300\L100_300_8_result.xlsx"
+    Nitrogen = "300 mg/L"
+    skip_sheet = {"数据汇总", "👈←25-10-25批次   理论预测17组→👉", "← 👈25-09-26批  理论预测2组👉→"}
+    set_valid_num = 96
     result = process_cell_growth(
         excel_path=EXCEL_FILE_PATH,
         result_excel_path=RESULT_EXCEL_PATH,
         min_data_points=5,
-        nitrogen_concentration=Nitrogen
+        nitrogen_concentration=Nitrogen,
+        skip_sheet_name=skip_sheet,
+        valid_num=set_valid_num
     )
     if result is not None:
         print("\n单独拟合结果预览（含生长阶段时长）：")

@@ -1,3 +1,5 @@
 # 忽略所有 images 目录下的文件（但保留目录结构）
 dataset/*
 /dataset/
+generate_figures/*
+/generate_figures/
