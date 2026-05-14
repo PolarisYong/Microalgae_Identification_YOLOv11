@@ -86,8 +86,8 @@ def standardize_cell_data(input_file, output_file, skip_sheet_name):
 
 
 # 配置文件路径
-INPUT_EXCEL = r"F:\Microalgae_Photoes\summary\L100_20\simulate.xlsx"  # 原始数据文件路径
-OUTPUT_EXCEL = r"F:\Microalgae_Photoes\summary\L100_20\simulate_标准化.xlsx"
+INPUT_EXCEL = r"F:\Microalgae_Photoes\20260504\数据汇总\01_原始数据\CH4.xlsx"  # 原始数据文件路径
+OUTPUT_EXCEL = r"F:\Microalgae_Photoes\20260504\数据汇总\02_标准化数据\CH4_标准化.xlsx"
 # OUTPUT_EXCEL = INPUT_EXCEL[:-5] + "_标准化.xlsx"
 
 # 执行标准化

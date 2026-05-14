@@ -73,10 +73,10 @@ def merge_excel_sheets(root_dir, output_file):
 
 if __name__ == "__main__":
     # 请在此处修改为您的根文件夹路径
-    root_directory = r"F:\Microalgae_Photoes\20251104\CH6"
+    root_directory = r"F:\Microalgae_Photoes\20260504\CH4"
 
     # 输出文件路径和名称
-    output_excel = r"F:\Microalgae_Photoes\20251104\数据处理结果\原始数据\CH6.xlsx"
+    output_excel = r"F:\Microalgae_Photoes\20260504\数据汇总\01_原始数据\CH4.xlsx"
 
     # 执行合并操作
     merge_excel_sheets(root_directory, output_excel)

@@ -473,8 +473,20 @@ def process_folder(folder_path):
 # process_folder(folder_path)
 
 # 示例: 处理多个子文件夹（若有需要可取消注释使用）
-root_folder = r'F:\Microalgae_Photoes\20260214\CH2'
+root_folder = r'F:\Microalgae_Photoes\20260504\CH1'
 for subdir in os.listdir(root_folder):
     subfolder_path = os.path.join(root_folder, subdir)
+    if os.path.isdir(subfolder_path):
+        process_folder(subfolder_path)
+
+root_folder_2 = r'F:\Microalgae_Photoes\20260504\CH2'
+for subdir in os.listdir(root_folder_2):
+    subfolder_path = os.path.join(root_folder_2, subdir)
+    if os.path.isdir(subfolder_path):
+        process_folder(subfolder_path)
+
+root_folder_3 = r'F:\Microalgae_Photoes\20260504\CH3'
+for subdir in os.listdir(root_folder_3):
+    subfolder_path = os.path.join(root_folder_3, subdir)
     if os.path.isdir(subfolder_path):
         process_folder(subfolder_path)

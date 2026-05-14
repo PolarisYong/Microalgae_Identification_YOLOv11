@@ -732,12 +732,12 @@ def process_cell_growth(excel_path, result_excel_path="enhanced_cell_growth_resu
 
 # ---------------------- 脚本执行入口 ----------------------
 if __name__ == "__main__":
-    EXCEL_FILE_PATH = r"F:\Microalgae_Photoes\simulate\L100_300\L100_300_8.xlsx"
+    EXCEL_FILE_PATH = r"F:\Microalgae_Photoes\20260504\数据汇总\02_标准化数据\CH4_标准化.xlsx"
     # RESULT_EXCEL_PATH = EXCEL_FILE_PATH[:-5] + "_数据处理.xlsx"
-    RESULT_EXCEL_PATH = r"F:\Microalgae_Photoes\simulate\L100_300\L100_300_8_result.xlsx"
-    Nitrogen = "300 mg/L"
+    RESULT_EXCEL_PATH = r"F:\Microalgae_Photoes\20260504\数据汇总\03_可视化结果\CH4_可视化结果.xlsx"
+    Nitrogen = "160 mg/L"
     skip_sheet = {"数据汇总", "👈←25-10-25批次   理论预测17组→👉", "← 👈25-09-26批  理论预测2组👉→"}
-    set_valid_num = 96
+    set_valid_num = 97
     result = process_cell_growth(
         excel_path=EXCEL_FILE_PATH,
         result_excel_path=RESULT_EXCEL_PATH,
