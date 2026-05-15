@@ -9,16 +9,17 @@ import cv2
 import numpy as np
 import pandas as pd
 import torch
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
 from ultralytics import YOLO
 
 
+# 提升了对微藻数量较多时候的目标识别能力
 MODEL_PATH = r"E:\pythonProject\Microalgae_Identification_YOLOv11\runs\segment\train3\weights\best.pt"
 
 # Update this list if needed.
 ROOT_FOLDERS = [
-    r"F:\Microalgae_Photoes\text_photoes\CH1",
+    r"F:\Microalgae_Photoes\text_photoes\CH2",
 ]
 
 ACTUAL_WIDTH_UM = 44.3
@@ -33,6 +34,10 @@ TILE_OVERLAP = 256
 
 MERGE_IOU_THRESHOLD = 0.35
 MIN_MASK_AREA = 10
+BOUNDARY_DARK_THRESHOLD = 120
+BOUNDARY_ERODE_KERNEL = 7
+MIN_INSIDE_RATIO = 0.05
+MANUAL_CHAMBER_MASK_NAME = "chamber_mask.png"
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 CPU_MODEL = None
@@ -83,6 +88,37 @@ def cv2_img_add_text(img, text, position, text_color=(0, 255, 0), text_size=0.6,
     return img
 
 
+def load_cjk_font(font_size):
+    font_paths = [
+        r"C:\Windows\Fonts\msyh.ttc",
+        r"C:\Windows\Fonts\simhei.ttf",
+        "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+        "/System/Library/Fonts/PingFang.ttc",
+    ]
+    for font_path in font_paths:
+        try:
+            return ImageFont.truetype(font_path, font_size, encoding="utf-8")
+        except Exception:
+            continue
+    return ImageFont.load_default()
+
+
+def load_symbol_font(font_size):
+    font_paths = [
+        r"C:\Windows\Fonts\segoeui.ttf",
+        r"C:\Windows\Fonts\arial.ttf",
+        r"C:\Windows\Fonts\arialuni.ttf",
+        r"C:\Windows\Fonts\seguisym.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    ]
+    for font_path in font_paths:
+        try:
+            return ImageFont.truetype(font_path, font_size, encoding="utf-8")
+        except Exception:
+            continue
+    return ImageFont.load_default()
+
+
 def is_cuda_oom(exc):
     msg = str(exc).lower()
     return isinstance(exc, torch.cuda.OutOfMemoryError) or ("cuda" in msg and "out of memory" in msg)
@@ -129,6 +165,86 @@ def preprocess_for_dense(image_bgr):
     blur = cv2.GaussianBlur(enhanced, (0, 0), sigmaX=1.2)
     sharpened = cv2.addWeighted(enhanced, 1.35, blur, -0.35, 0)
     return sharpened
+
+
+def build_chamber_mask(image_bgr):
+    gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
+    _, dark = cv2.threshold(gray, BOUNDARY_DARK_THRESHOLD, 255, cv2.THRESH_BINARY_INV)
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (BOUNDARY_ERODE_KERNEL, BOUNDARY_ERODE_KERNEL))
+    barrier = cv2.morphologyEx(dark, cv2.MORPH_CLOSE, kernel, iterations=2)
+    barrier = cv2.dilate(barrier, kernel, iterations=1)
+
+    free = np.where(barrier > 0, 0, 255).astype(np.uint8)
+    flood = free.copy()
+    h, w = free.shape
+    flood_mask = np.zeros((h + 2, w + 2), dtype=np.uint8)
+    for seed_x, seed_y in [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)]:
+        if flood[seed_y, seed_x] == 255:
+            cv2.floodFill(flood, flood_mask, (seed_x, seed_y), 128)
+            flood_mask.fill(0)
+
+    chamber_mask = flood == 255
+    chamber_mask = cv2.erode((chamber_mask.astype(np.uint8) * 255), kernel, iterations=1).astype(bool)
+    coverage = float(chamber_mask.mean())
+    if coverage < 0.02 or coverage > 0.98:
+        return None
+
+    return chamber_mask
+
+
+def load_manual_chamber_mask(image_path, reference_shape):
+    mask_path = os.path.join(os.path.dirname(image_path), MANUAL_CHAMBER_MASK_NAME)
+    if not os.path.exists(mask_path):
+        return None
+
+    try:
+        mask_img = Image.open(mask_path).convert("L")
+        mask = np.asarray(mask_img)
+        if mask.shape[:2] != reference_shape:
+            mask = cv2.resize(mask, (reference_shape[1], reference_shape[0]), interpolation=cv2.INTER_NEAREST)
+        return mask > 127
+    except Exception as exc:
+        print(f"  warning: failed to load manual chamber mask {mask_path}: {type(exc).__name__}: {exc}")
+        return None
+
+
+def instance_inside_chamber(instance, chamber_mask):
+    x1, y1, x2, y2 = instance.box
+    if x2 <= x1 or y2 <= y1:
+        return False
+
+    chamber_roi = chamber_mask[y1:y2, x1:x2]
+    if chamber_roi.shape != instance.mask.shape:
+        chamber_roi = resize_mask_to_shape(chamber_roi, instance.mask.shape[:2])
+
+    total_pixels = int(instance.mask.sum())
+    if total_pixels <= 0:
+        return False
+
+    inside_pixels = int(np.logical_and(instance.mask, chamber_roi).sum())
+    inside_ratio = inside_pixels / total_pixels
+
+    ys, xs = np.where(instance.mask)
+    if xs.size == 0 or ys.size == 0:
+        return False
+    cx = x1 + int(np.mean(xs))
+    cy = y1 + int(np.mean(ys))
+    if cy < 0 or cx < 0 or cy >= chamber_mask.shape[0] or cx >= chamber_mask.shape[1]:
+        return False
+
+    return bool(chamber_mask[cy, cx]) and inside_ratio >= MIN_INSIDE_RATIO
+
+
+def filter_instances_inside_chamber(instances, chamber_mask):
+    if not instances or chamber_mask is None:
+        return instances
+
+    filtered = [inst for inst in instances if instance_inside_chamber(inst, chamber_mask)]
+    removed = len(instances) - len(filtered)
+    if removed > 0:
+        print(f"  boundary filter removed {removed} outside instance(s)")
+    return filtered
 
 
 def sanitize_sheet_name(name):
@@ -297,21 +413,38 @@ def overlay_instances(image_bgr, instances, show_labels=False, show_boxes=False,
             if xs.size > 0 and ys.size > 0:
                 cx = x1 + int(xs.mean())
                 cy = y1 + int(ys.mean())
-                cv2.putText(canvas, f"ID{idx}", (max(0, cx - 12), max(15, cy)), FONT, 0.45, color, 1, cv2.LINE_AA)
+                label = str(idx)
+                text_size, _ = cv2.getTextSize(label, FONT, 0.4, 1)
+                tx = max(0, cx - text_size[0] // 2)
+                ty = max(text_size[1] + 1, cy)
+                cv2.putText(canvas, label, (tx, ty), FONT, 0.4, (0, 0, 0), 1, cv2.LINE_AA)
 
     return canvas
 
 
 def add_stats_panel(image_bgr, lines):
-    canvas = image_bgr.copy()
+    canvas = Image.fromarray(cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB))
+    draw = ImageDraw.Draw(canvas)
+    cjk_font = load_cjk_font(24)
+    sym_font = load_symbol_font(24)
     x = 10
-    y = 24
+    y = 10
     for line in lines:
-        (tw, th), baseline = cv2.getTextSize(line, FONT, 0.65, 2)
-        cv2.rectangle(canvas, (x - 4, y - th - 8), (x + tw + 8, y + baseline + 6), (0, 0, 0), -1)
-        cv2.putText(canvas, line, (x, y), FONT, 0.65, (255, 255, 255), 2, cv2.LINE_AA)
-        y += th + 16
-    return canvas
+        bbox = draw.textbbox((x, y), line, font=cjk_font)
+        draw.rectangle((bbox[0] - 4, bbox[1] - 2, bbox[2] + 4, bbox[3] + 2), fill=(255, 255, 255))
+        if "μm²" in line:
+            prefix, suffix = line.split("μm²", 1)
+            prefix_text = prefix + "μm"
+            draw.text((x, y), prefix_text, fill=(0, 0, 0), font=cjk_font)
+            prefix_bbox = draw.textbbox((x, y), prefix_text, font=cjk_font)
+            draw.text((prefix_bbox[2], y), "²", fill=(0, 0, 0), font=sym_font)
+            if suffix:
+                sym_bbox = draw.textbbox((prefix_bbox[2], y), "²", font=sym_font)
+                draw.text((sym_bbox[2], y), suffix, fill=(0, 0, 0), font=cjk_font)
+        else:
+            draw.text((x, y), line, fill=(0, 0, 0), font=cjk_font)
+        y += (bbox[3] - bbox[1]) + 10
+    return cv2.cvtColor(np.asarray(canvas), cv2.COLOR_RGB2BGR)
 
 
 def iter_tiles(image_shape, tile_size=TILE_SIZE, overlap=TILE_OVERLAP):
@@ -516,6 +649,9 @@ def process_image(model, image_path):
     if original_img is None:
         raise ValueError("unable to read image")
 
+    chamber_mask = load_manual_chamber_mask(image_path, original_img.shape[:2])
+    if chamber_mask is None:
+        chamber_mask = build_chamber_mask(original_img)
     working_img = preprocess_for_dense(original_img) if ENABLE_DENSE_PREPROCESS else original_img
 
     full_results, cfg_used, pred_error, full_had_oom = predict_with_retry(model, working_img, mode="full")
@@ -538,11 +674,16 @@ def process_image(model, image_path):
         cpu_tile_instances, _ = predict_tiles(model, working_img, cpu_only=True)
         tile_instances.extend(cpu_tile_instances)
 
+    base_instances = filter_instances_inside_chamber(base_instances, chamber_mask)
+    tile_instances = filter_instances_inside_chamber(tile_instances, chamber_mask)
+
     merged_instances = merge_instances(
         base_instances + tile_instances,
         iou_threshold=MERGE_IOU_THRESHOLD,
         class_agnostic=True,
     )
+
+    merged_instances = filter_instances_inside_chamber(merged_instances, chamber_mask)
 
     if not merged_instances:
         raise RuntimeError("no detections from full pass or tile pass")
@@ -553,6 +694,7 @@ def process_image(model, image_path):
         "full_count": len(base_instances),
         "tile_count": len(tile_instances),
         "cfg_used": cfg_used,
+        "chamber_mask": chamber_mask,
     }
 
 
@@ -625,27 +767,20 @@ def process_folder(folder_path, model):
                 for i, inst in enumerate(merged_instances, start=1):
                     area_um2 = calculate_actual_area_um2(inst, original_img.shape[:2])
                     total_area += area_um2
-                    x1, y1, x2, y2 = inst.box
                     target_details.append(
                         {
                             "目标编号": i,
                             "类别ID": inst.cls,
                             "置信度": f"{inst.conf:.2f}",
                             "实际面积(μm²)": f"{area_um2:.2f}",
-                            "框左上X": x1,
-                            "框左上Y": y1,
-                            "框右下X": x2,
-                            "框右下Y": y2,
                         }
                     )
 
                 mask_only = overlay_instances(original_img, merged_instances, show_labels=False, show_boxes=False)
                 mask_with_ids = overlay_instances(original_img, merged_instances, show_labels=True, show_boxes=False)
                 stats_lines = [
-                    f"Count: {len(merged_instances)}",
-                    f"Area: {total_area:.2f} um2",
-                    f"Full pass: {proc['full_count']}",
-                    f"Tile pass: {proc['tile_count']}",
+                    f"微藻总数: {len(merged_instances)}",
+                    f"微藻总面积: {total_area:.2f} μm²",
                 ]
                 mask_with_ids = add_stats_panel(mask_with_ids, stats_lines)
 
@@ -669,8 +804,6 @@ def process_folder(folder_path, model):
                             "原始尺寸(像素)": f"{original_img.shape[1]}x{original_img.shape[0]}",
                             "目标总数": len(merged_instances),
                             "总面积(μm²)": f"{total_area:.2f}",
-                            "整图检出数": proc["full_count"],
-                            "切片检出数": proc["tile_count"],
                         }
                     ]
                 )
