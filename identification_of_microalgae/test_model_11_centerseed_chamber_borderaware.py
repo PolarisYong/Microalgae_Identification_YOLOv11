@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
 from ultralytics import YOLO
 
-# 提升了对微藻数量较多时候的目标识别能力
+
 MODEL_PATH = r"E:\pythonProject\Microalgae_Identification_YOLOv11\runs\segment\train3\weights\best.pt"
 
 # Update this list if needed.
@@ -27,6 +27,8 @@ ACTUAL_HEIGHT_UM = 42.8
 DENSE_MODE = True
 ENABLE_TILE_PASS = True
 ENABLE_DENSE_PREPROCESS = True
+ENABLE_MASK_REFINEMENT = True
+ENABLE_CHAMBER_FILTER = True
 
 TILE_SIZE = 1024
 TILE_OVERLAP = 256
@@ -36,6 +38,24 @@ MIN_MASK_AREA = 10
 BOUNDARY_DARK_THRESHOLD = 120
 BOUNDARY_ERODE_KERNEL = 7
 MIN_INSIDE_RATIO = 0.30
+CHAMBER_TEMPLATE_NAMES = ("chamber_template.png", "chamber_mask.png")
+CHAMBER_MASK_DILATION = 0
+MASK_REPAIR_MAX_KERNEL = 7
+MASK_REPAIR_MAX_AREA_GAIN_RATIO = 0.18
+MASK_REPAIR_MAX_AREA_LOSS_RATIO = 0.08
+MASK_REPAIR_MAX_HOLE_AREA_RATIO = 0.12
+MASK_REPAIR_MIN_IOU = 0.78
+CHAMBER_CENTER_SEARCH_RADIUS = 64
+CHAMBER_BORDER_MAX_RATIO = 0.05
+ENABLE_TINY_INSTANCE_FILTER = True
+TINY_INSTANCE_ABS_AREA = 450
+TINY_INSTANCE_REL_AREA = 0.18
+TINY_INSTANCE_MIN_SIDE = 4
+TINY_INSTANCE_MIN_FILL_RATIO = 0.22
+TINY_INSTANCE_MAX_ASPECT_RATIO = 6.0
+TINY_INSTANCE_MIN_EQUIV_DIAMETER = 4.5
+CHAMBER_CORE_ERODE_KERNEL = 9
+CHAMBER_BORDER_TOUCH_MIN_INSIDE_RATIO = 0.50
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 CPU_MODEL = None
@@ -165,35 +185,220 @@ def preprocess_for_dense(image_bgr):
     return sharpened
 
 
-def build_chamber_mask(image_bgr):
+def detect_black_wall_mask(image_bgr):
     gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
     _, dark = cv2.threshold(gray, BOUNDARY_DARK_THRESHOLD, 255, cv2.THRESH_BINARY_INV)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (BOUNDARY_ERODE_KERNEL, BOUNDARY_ERODE_KERNEL))
-    dark = cv2.morphologyEx(dark, cv2.MORPH_CLOSE, kernel, iterations=2)
-    dark = cv2.dilate(dark, kernel, iterations=1)
+    barrier = cv2.morphologyEx(dark, cv2.MORPH_CLOSE, kernel, iterations=2)
+    barrier = cv2.dilate(barrier, kernel, iterations=1)
+    return barrier > 0
 
-    contours, _ = cv2.findContours(dark, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    if not contours:
+
+def find_center_seed(free_mask):
+    h, w = free_mask.shape[:2]
+    cx = w // 2
+    cy = h // 2
+
+    if free_mask[cy, cx]:
+        return cx, cy
+
+    limit = min(CHAMBER_CENTER_SEARCH_RADIUS, max(h, w))
+    for radius in range(1, limit + 1):
+        x1 = max(0, cx - radius)
+        x2 = min(w, cx + radius + 1)
+        y1 = max(0, cy - radius)
+        y2 = min(h, cy + radius + 1)
+        window = free_mask[y1:y2, x1:x2]
+        ys, xs = np.where(window)
+        if xs.size == 0:
+            continue
+
+        xs = xs + x1
+        ys = ys + y1
+        distances = (xs - cx) ** 2 + (ys - cy) ** 2
+        idx = int(np.argmin(distances))
+        return int(xs[idx]), int(ys[idx])
+
+    return None
+
+
+def mask_border_ratio(mask):
+    if mask.size == 0:
+        return 1.0
+    border = np.concatenate([mask[0, :], mask[-1, :], mask[:, 0], mask[:, -1]])
+    return float(border.mean()) if border.size else 1.0
+
+
+def build_chamber_from_seed(wall_mask):
+    free_mask = ~wall_mask
+    seed = find_center_seed(free_mask)
+    if seed is None:
         return None
 
-    chamber_contour = max(contours, key=cv2.contourArea)
-    if cv2.contourArea(chamber_contour) <= 0:
+    seed_x, seed_y = seed
+    num_labels, labels = cv2.connectedComponents(free_mask.astype(np.uint8), connectivity=8)
+    seed_label = int(labels[seed_y, seed_x])
+    if seed_label == 0:
         return None
 
-    chamber_mask = np.zeros_like(gray, dtype=np.uint8)
-    cv2.drawContours(chamber_mask, [chamber_contour], -1, 255, thickness=cv2.FILLED)
-    chamber_mask = cv2.erode(chamber_mask, kernel, iterations=1)
+    chamber_mask = labels == seed_label
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (BOUNDARY_ERODE_KERNEL, BOUNDARY_ERODE_KERNEL))
+    chamber_mask = cv2.erode((chamber_mask.astype(np.uint8) * 255), kernel, iterations=1).astype(bool)
 
-    chamber_mask = chamber_mask.astype(bool)
     coverage = float(chamber_mask.mean())
     if coverage < 0.02 or coverage > 0.98:
+        return None
+    if not chamber_mask[seed_y, seed_x]:
+        return None
+    if mask_border_ratio(chamber_mask) > CHAMBER_BORDER_MAX_RATIO:
         return None
 
     return chamber_mask
 
 
-def instance_inside_chamber(instance, chamber_mask):
+def build_chamber_from_corners(wall_mask):
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (BOUNDARY_ERODE_KERNEL, BOUNDARY_ERODE_KERNEL))
+    free = np.where(wall_mask, 0, 255).astype(np.uint8)
+    flood = free.copy()
+    h, w = free.shape
+    flood_mask = np.zeros((h + 2, w + 2), dtype=np.uint8)
+    for seed_x, seed_y in [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)]:
+        if flood[seed_y, seed_x] == 255:
+            cv2.floodFill(flood, flood_mask, (seed_x, seed_y), 128)
+            flood_mask.fill(0)
+
+    chamber_mask = flood == 255
+    chamber_mask = cv2.erode((chamber_mask.astype(np.uint8) * 255), kernel, iterations=1).astype(bool)
+    coverage = float(chamber_mask.mean())
+    if coverage < 0.02 or coverage > 0.98:
+        return None
+    if mask_border_ratio(chamber_mask) > CHAMBER_BORDER_MAX_RATIO:
+        return None
+
+    return chamber_mask
+
+
+def build_auto_chamber_mask(image_bgr):
+    wall_mask = detect_black_wall_mask(image_bgr)
+    chamber_mask = build_chamber_from_seed(wall_mask)
+    if chamber_mask is not None:
+        return chamber_mask
+
+    return build_chamber_from_corners(wall_mask)
+
+
+def build_chamber_core_mask(chamber_mask, erode_kernel=CHAMBER_CORE_ERODE_KERNEL):
+    if chamber_mask is None:
+        return None
+
+    kernel_size = max(3, int(erode_kernel))
+    if kernel_size % 2 == 0:
+        kernel_size += 1
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
+    core = cv2.erode(chamber_mask.astype(np.uint8) * 255, kernel, iterations=1) > 0
+
+    if core.sum() == 0:
+        return chamber_mask
+
+    return core
+
+
+def load_template_chamber_mask(image_path, reference_shape):
+    search_dirs = [
+        os.path.dirname(image_path),
+        os.path.dirname(os.path.abspath(__file__)) if "__file__" in globals() else os.getcwd(),
+    ]
+
+    tried_paths = []
+    for base_dir in search_dirs:
+        for name in CHAMBER_TEMPLATE_NAMES:
+            mask_path = os.path.join(base_dir, name)
+            tried_paths.append(mask_path)
+            if not os.path.exists(mask_path):
+                continue
+
+            try:
+                mask_img = Image.open(mask_path).convert("L")
+                mask = np.asarray(mask_img)
+                if mask.shape[:2] != reference_shape:
+                    mask = cv2.resize(mask, (reference_shape[1], reference_shape[0]), interpolation=cv2.INTER_NEAREST)
+                return mask > 127
+            except Exception as exc:
+                print(f"  warning: failed to load chamber template {mask_path}: {type(exc).__name__}: {exc}")
+
+    return None
+
+
+def warp_bool_mask(mask, dx, dy, out_shape):
+    matrix = np.array([[1.0, 0.0, float(dx)], [0.0, 1.0, float(dy)]], dtype=np.float32)
+    warped = cv2.warpAffine(
+        mask.astype(np.uint8) * 255,
+        matrix,
+        (out_shape[1], out_shape[0]),
+        flags=cv2.INTER_NEAREST,
+        borderValue=0,
+    )
+    return warped > 0
+
+
+def mask_iou_bool(mask1, mask2):
+    intersection = np.logical_and(mask1, mask2).sum()
+    union = np.logical_or(mask1, mask2).sum()
+    if union == 0:
+        return 0.0
+    return float(intersection) / float(union)
+
+
+def align_template_to_wall(template_mask, wall_mask):
+    if template_mask is None or wall_mask is None:
+        return template_mask
+
+    if template_mask.shape != wall_mask.shape:
+        template_mask = cv2.resize(
+            template_mask.astype(np.uint8),
+            (wall_mask.shape[1], wall_mask.shape[0]),
+            interpolation=cv2.INTER_NEAREST,
+        ) > 0
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    template_edge = cv2.morphologyEx(template_mask.astype(np.uint8) * 255, cv2.MORPH_GRADIENT, kernel)
+    wall_u8 = (wall_mask.astype(np.uint8) * 255)
+
+    template_f = cv2.GaussianBlur(template_edge.astype(np.float32), (0, 0), 2.0)
+    wall_f = cv2.GaussianBlur(wall_u8.astype(np.float32), (0, 0), 2.0)
+
+    try:
+        shift, response = cv2.phaseCorrelate(template_f, wall_f)
+    except Exception:
+        return template_mask
+
+    if not np.isfinite(shift[0]) or not np.isfinite(shift[1]) or response < 0.01:
+        return template_mask
+
+    candidates = [
+        (shift[0], shift[1]),
+        (-shift[0], -shift[1]),
+        (0.0, 0.0),
+    ]
+
+    best_mask = template_mask
+    best_score = -1.0
+    wall_score_mask = cv2.dilate(wall_u8, kernel, iterations=1) > 0
+
+    for dx, dy in candidates:
+        warped = warp_bool_mask(template_mask, dx, dy, wall_mask.shape[:2])
+        warped_edge = cv2.morphologyEx(warped.astype(np.uint8) * 255, cv2.MORPH_GRADIENT, kernel) > 0
+        score = mask_iou_bool(cv2.dilate(warped_edge.astype(np.uint8) * 255, kernel, iterations=1) > 0, wall_score_mask)
+        if score > best_score:
+            best_score = score
+            best_mask = warped
+
+    return best_mask
+
+
+def instance_inside_chamber(instance, chamber_mask, chamber_core_mask=None):
     x1, y1, x2, y2 = instance.box
     if x2 <= x1 or y2 <= y1:
         return False
@@ -202,12 +407,25 @@ def instance_inside_chamber(instance, chamber_mask):
     if chamber_roi.shape != instance.mask.shape:
         chamber_roi = resize_mask_to_shape(chamber_roi, instance.mask.shape[:2])
 
+    core_roi = None
+    if chamber_core_mask is not None:
+        core_roi = chamber_core_mask[y1:y2, x1:x2]
+        if core_roi.shape != instance.mask.shape:
+            core_roi = resize_mask_to_shape(core_roi, instance.mask.shape[:2])
+
     total_pixels = int(instance.mask.sum())
     if total_pixels <= 0:
         return False
 
     inside_pixels = int(np.logical_and(instance.mask, chamber_roi).sum())
     inside_ratio = inside_pixels / total_pixels
+
+    core_pixels = 0
+    boundary_band_roi = None
+    if core_roi is not None:
+        core_pixels = int(np.logical_and(instance.mask, core_roi).sum())
+        boundary_band_roi = np.logical_and(chamber_roi, np.logical_not(core_roi))
+    touches_boundary_band = bool(np.logical_and(instance.mask, boundary_band_roi).any()) if boundary_band_roi is not None else False
 
     ys, xs = np.where(instance.mask)
     if xs.size == 0 or ys.size == 0:
@@ -217,14 +435,21 @@ def instance_inside_chamber(instance, chamber_mask):
     if cy < 0 or cx < 0 or cy >= chamber_mask.shape[0] or cx >= chamber_mask.shape[1]:
         return False
 
-    return bool(chamber_mask[cy, cx]) and inside_ratio >= MIN_INSIDE_RATIO
+    centroid_in_chamber = bool(chamber_mask[cy, cx])
+    if not centroid_in_chamber:
+        return False
+
+    if core_roi is not None and touches_boundary_band:
+        return core_pixels > 0 and inside_ratio >= CHAMBER_BORDER_TOUCH_MIN_INSIDE_RATIO
+
+    return inside_ratio >= MIN_INSIDE_RATIO
 
 
-def filter_instances_inside_chamber(instances, chamber_mask):
+def filter_instances_inside_chamber(instances, chamber_mask, chamber_core_mask=None):
     if not instances or chamber_mask is None:
         return instances
 
-    filtered = [inst for inst in instances if instance_inside_chamber(inst, chamber_mask)]
+    filtered = [inst for inst in instances if instance_inside_chamber(inst, chamber_mask, chamber_core_mask)]
     removed = len(instances) - len(filtered)
     if removed > 0:
         print(f"  boundary filter removed {removed} outside instance(s)")
@@ -279,6 +504,243 @@ def resize_mask_to_shape(mask, shape_hw):
     if mask.shape[:2] != shape_hw:
         mask = cv2.resize(mask.astype(np.uint8), (shape_hw[1], shape_hw[0]), interpolation=cv2.INTER_NEAREST)
     return mask.astype(bool)
+
+
+def ensure_odd(value):
+    value = max(1, int(value))
+    if value % 2 == 0:
+        value += 1
+    return value
+
+
+def clamp_kernel_size(value, shape_hw, max_kernel=MASK_REPAIR_MAX_KERNEL):
+    max_allowed = min(shape_hw[0], shape_hw[1], max_kernel)
+    if max_allowed < 1:
+        return 1
+    if max_allowed % 2 == 0:
+        max_allowed -= 1
+    if max_allowed < 1:
+        return 1
+    return min(ensure_odd(value), max_allowed)
+
+
+def count_connected_components(mask):
+    mask_u8 = mask.astype(np.uint8)
+    num_labels, _, stats, _ = cv2.connectedComponentsWithStats(mask_u8, connectivity=8)
+    if num_labels <= 1:
+        return 0, []
+    areas = [int(stats[idx, cv2.CC_STAT_AREA]) for idx in range(1, num_labels)]
+    return len(areas), areas
+
+
+def compute_hole_stats(mask):
+    h, w = mask.shape[:2]
+    inv_u8 = (~mask).astype(np.uint8)
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(inv_u8, connectivity=8)
+    holes = []
+
+    for idx in range(1, num_labels):
+        x = int(stats[idx, cv2.CC_STAT_LEFT])
+        y = int(stats[idx, cv2.CC_STAT_TOP])
+        comp_w = int(stats[idx, cv2.CC_STAT_WIDTH])
+        comp_h = int(stats[idx, cv2.CC_STAT_HEIGHT])
+        area = int(stats[idx, cv2.CC_STAT_AREA])
+        touches_border = x == 0 or y == 0 or (x + comp_w) >= w or (y + comp_h) >= h
+        if not touches_border:
+            holes.append((idx, area))
+
+    return labels, holes
+
+
+def fill_small_internal_holes(mask, max_hole_area, max_total_fill_area):
+    labels, holes = compute_hole_stats(mask)
+    if not holes:
+        return mask
+
+    repaired = mask.copy()
+    filled_area = 0
+    for label_idx, area in sorted(holes, key=lambda item: item[1]):
+        if area > max_hole_area or filled_area + area > max_total_fill_area:
+            continue
+        repaired[labels == label_idx] = True
+        filled_area += area
+
+    return repaired
+
+
+def compute_mask_perimeter(mask):
+    contours, _ = cv2.findContours(mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    return float(sum(cv2.arcLength(cnt, True) for cnt in contours))
+
+
+def compute_mask_quality(mask):
+    component_count, _ = count_connected_components(mask)
+    _, holes = compute_hole_stats(mask)
+    return {
+        "area": int(mask.sum()),
+        "components": component_count,
+        "hole_count": len(holes),
+        "hole_area": int(sum(area for _, area in holes)),
+        "perimeter": compute_mask_perimeter(mask),
+    }
+
+
+def tighten_instance_box(instance):
+    local_bbox = mask_to_bbox(instance.mask)
+    if local_bbox is None:
+        return None
+
+    lx1, ly1, lx2, ly2 = local_bbox
+    gx1, gy1, _, _ = instance.box
+    return Instance(
+        mask=instance.mask[ly1:ly2, lx1:lx2].copy(),
+        box=(gx1 + lx1, gy1 + ly1, gx1 + lx2, gy1 + ly2),
+        cls=instance.cls,
+        conf=instance.conf,
+    )
+
+
+def should_accept_mask_candidate(original_mask, candidate_mask):
+    if candidate_mask.shape != original_mask.shape:
+        return False
+
+    original_stats = compute_mask_quality(original_mask)
+    candidate_stats = compute_mask_quality(candidate_mask)
+
+    original_area = max(1, original_stats["area"])
+    area_gain_ratio = (candidate_stats["area"] - original_stats["area"]) / float(original_area)
+    if area_gain_ratio > MASK_REPAIR_MAX_AREA_GAIN_RATIO or area_gain_ratio < -MASK_REPAIR_MAX_AREA_LOSS_RATIO:
+        return False
+
+    overlap_iou = mask_iou_bool(original_mask, candidate_mask)
+    if overlap_iou < MASK_REPAIR_MIN_IOU:
+        return False
+
+    if candidate_stats["components"] > max(1, original_stats["components"]):
+        return False
+
+    improved = False
+    if candidate_stats["components"] < original_stats["components"]:
+        improved = True
+    if candidate_stats["hole_area"] < original_stats["hole_area"]:
+        improved = True
+    if candidate_stats["hole_count"] < original_stats["hole_count"]:
+        improved = True
+    if candidate_stats["perimeter"] < original_stats["perimeter"] * 0.985:
+        improved = True
+
+    return improved
+
+
+def refine_single_mask(mask):
+    refined = mask.astype(bool)
+    if refined.sum() < MIN_MASK_AREA:
+        return refined
+
+    area = int(refined.sum())
+    bbox_h, bbox_w = refined.shape[:2]
+    kernel_size = clamp_kernel_size(np.sqrt(4.0 * area / np.pi) * 0.18, (bbox_h, bbox_w))
+    if kernel_size < 3:
+        return refined
+
+    max_hole_area = max(4, int(area * MASK_REPAIR_MAX_HOLE_AREA_RATIO))
+    max_total_fill_area = max_hole_area * 2
+
+    hole_filled = fill_small_internal_holes(refined, max_hole_area=max_hole_area, max_total_fill_area=max_total_fill_area)
+    if should_accept_mask_candidate(refined, hole_filled):
+        refined = hole_filled
+
+    pad = kernel_size
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
+    padded = np.pad(refined.astype(np.uint8) * 255, pad_width=pad, mode="constant", constant_values=0)
+    closed = cv2.morphologyEx(padded, cv2.MORPH_CLOSE, kernel, iterations=1) > 0
+    closed = closed[pad:pad + bbox_h, pad:pad + bbox_w]
+    if should_accept_mask_candidate(refined, closed):
+        refined = closed
+
+    return refined
+
+
+def refine_instances(instances):
+    refined_instances = []
+    for inst in instances:
+        refined_mask = refine_single_mask(inst.mask)
+        if int(refined_mask.sum()) < MIN_MASK_AREA:
+            refined_mask = inst.mask
+
+        tightened = tighten_instance_box(
+            Instance(
+                mask=refined_mask,
+                box=inst.box,
+                cls=inst.cls,
+                conf=inst.conf,
+            )
+        )
+        if tightened is not None and tightened.area_pixels >= MIN_MASK_AREA:
+            refined_instances.append(tightened)
+        else:
+            refined_instances.append(inst)
+
+    return refined_instances
+
+
+def get_instance_geometry(instance):
+    x1, y1, x2, y2 = instance.box
+    box_w = max(0, x2 - x1)
+    box_h = max(0, y2 - y1)
+    box_area = max(1, box_w * box_h)
+    area = int(instance.area_pixels)
+    min_side = min(box_w, box_h)
+    max_side = max(box_w, box_h)
+    fill_ratio = float(area) / float(box_area)
+    aspect_ratio = float(max_side) / float(max(1, min_side))
+    equiv_diameter = float(np.sqrt((4.0 * float(area)) / np.pi)) if area > 0 else 0.0
+    return {
+        "area": area,
+        "box_w": box_w,
+        "box_h": box_h,
+        "min_side": min_side,
+        "fill_ratio": fill_ratio,
+        "aspect_ratio": aspect_ratio,
+        "equiv_diameter": equiv_diameter,
+    }
+
+
+def filter_tiny_instances(instances):
+    if not instances:
+        return instances
+
+    areas = np.asarray([inst.area_pixels for inst in instances], dtype=np.float32)
+    median_area = float(np.median(areas)) if areas.size > 0 else 0.0
+    area_threshold = max(TINY_INSTANCE_ABS_AREA, int(round(median_area * TINY_INSTANCE_REL_AREA)))
+
+    kept = []
+    removed = 0
+    for inst in instances:
+        geom = get_instance_geometry(inst)
+        area = geom["area"]
+
+        if area >= area_threshold:
+            kept.append(inst)
+            continue
+
+        tiny_like = (
+            area <= TINY_INSTANCE_ABS_AREA
+            or geom["min_side"] <= TINY_INSTANCE_MIN_SIDE
+            or geom["fill_ratio"] <= TINY_INSTANCE_MIN_FILL_RATIO
+            or geom["aspect_ratio"] >= TINY_INSTANCE_MAX_ASPECT_RATIO
+            or geom["equiv_diameter"] <= TINY_INSTANCE_MIN_EQUIV_DIAMETER
+        )
+
+        if tiny_like:
+            removed += 1
+        else:
+            kept.append(inst)
+
+    if removed > 0:
+        print(f"  tiny filter removed {removed} instance(s); area_threshold={area_threshold}")
+
+    return kept
 
 
 def mask_to_bbox(mask):
@@ -633,7 +1095,24 @@ def process_image(model, image_path):
     if original_img is None:
         raise ValueError("unable to read image")
 
-    chamber_mask = build_chamber_mask(original_img)
+    wall_mask = detect_black_wall_mask(original_img)
+    chamber_mask = build_auto_chamber_mask(original_img)
+    chamber_core_mask = build_chamber_core_mask(chamber_mask)
+    template_mask = load_template_chamber_mask(image_path, original_img.shape[:2])
+    if template_mask is not None and wall_mask is not None:
+        template_mask = align_template_to_wall(template_mask, wall_mask)
+
+    if ENABLE_CHAMBER_FILTER:
+        if chamber_mask is not None and CHAMBER_MASK_DILATION > 0:
+            kernel = cv2.getStructuringElement(
+                cv2.MORPH_ELLIPSE,
+                (CHAMBER_MASK_DILATION, CHAMBER_MASK_DILATION),
+            )
+            chamber_mask = cv2.dilate(chamber_mask.astype(np.uint8) * 255, kernel, iterations=1) > 0
+        elif template_mask is not None:
+            chamber_mask = template_mask
+            chamber_core_mask = build_chamber_core_mask(chamber_mask)
+
     working_img = preprocess_for_dense(original_img) if ENABLE_DENSE_PREPROCESS else original_img
 
     full_results, cfg_used, pred_error, full_had_oom = predict_with_retry(model, working_img, mode="full")
@@ -656,8 +1135,9 @@ def process_image(model, image_path):
         cpu_tile_instances, _ = predict_tiles(model, working_img, cpu_only=True)
         tile_instances.extend(cpu_tile_instances)
 
-    base_instances = filter_instances_inside_chamber(base_instances, chamber_mask)
-    tile_instances = filter_instances_inside_chamber(tile_instances, chamber_mask)
+    if ENABLE_CHAMBER_FILTER:
+        base_instances = filter_instances_inside_chamber(base_instances, chamber_mask, chamber_core_mask)
+        tile_instances = filter_instances_inside_chamber(tile_instances, chamber_mask, chamber_core_mask)
 
     merged_instances = merge_instances(
         base_instances + tile_instances,
@@ -665,7 +1145,14 @@ def process_image(model, image_path):
         class_agnostic=True,
     )
 
-    merged_instances = filter_instances_inside_chamber(merged_instances, chamber_mask)
+    if ENABLE_CHAMBER_FILTER:
+        merged_instances = filter_instances_inside_chamber(merged_instances, chamber_mask, chamber_core_mask)
+
+    if ENABLE_MASK_REFINEMENT:
+        merged_instances = refine_instances(merged_instances)
+
+    if ENABLE_TINY_INSTANCE_FILTER:
+        merged_instances = filter_tiny_instances(merged_instances)
 
     if not merged_instances:
         raise RuntimeError("no detections from full pass or tile pass")
@@ -676,7 +1163,7 @@ def process_image(model, image_path):
         "full_count": len(base_instances),
         "tile_count": len(tile_instances),
         "cfg_used": cfg_used,
-        "chamber_mask": chamber_mask,
+        "chamber_mask": chamber_mask if ENABLE_CHAMBER_FILTER else None,
     }
 
 
