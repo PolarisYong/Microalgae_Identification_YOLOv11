@@ -1,5 +1,7 @@
 import pandas as pd
 import openpyxl
+import re  # 新增正则匹配
+import os
 
 
 def standardize_cell_data(input_file, output_file, skip_sheet_name):
@@ -85,12 +87,35 @@ def standardize_cell_data(input_file, output_file, skip_sheet_name):
     print(f"\n🎉 所有有效页签处理完成！标准化结果已保存至：{output_file}")
 
 
-# 配置文件路径
-INPUT_EXCEL = r"F:\Microalgae_Photoes\20260504\数据汇总\01_原始数据\CH4.xlsx"  # 原始数据文件路径
-OUTPUT_EXCEL = r"F:\Microalgae_Photoes\20260504\数据汇总\02_标准化数据\CH4_标准化.xlsx"
-# OUTPUT_EXCEL = INPUT_EXCEL[:-5] + "_标准化.xlsx"
-
-# 执行标准化
+# ===================== 批量处理核心配置（仅修改这里）=====================
 if __name__ == "__main__":
+    # 1. 原始数据目录（存放所有CH1.xlsx/CH2.xlsx的文件夹）
+    raw_data_dir = r"F:\Microalgae_Photoes\20260504\数据汇总\01_原始数据"
+    # 2. 标准化输出目录（自动生成CH1_标准化.xlsx...）
+    standard_output_dir = r"F:\Microalgae_Photoes\20260504\数据汇总\02_标准化数据"
+    # 3. 需要跳过的页签（保持你原来的配置不变）
     skip_sheet = {"数据汇总", "← 👈25-9-26批  25-10-25批👉→", "👉→理论预测 9组"}
-    standardize_cell_data(INPUT_EXCEL, OUTPUT_EXCEL, skip_sheet)
+
+    # 自动创建输出目录
+    os.makedirs(standard_output_dir, exist_ok=True)
+    # 正则匹配：CH1.xlsx ~ CH99.xlsx
+    excel_pattern = re.compile(r'^CH\d{1,2}\.xlsx$')
+
+    # 遍历原始数据目录，批量处理所有CH文件
+    for file_name in os.listdir(raw_data_dir):
+        file_path = os.path.join(raw_data_dir, file_name)
+        # 筛选：是文件 + 名称匹配CHN.xlsx
+        if os.path.isfile(file_path) and excel_pattern.match(file_name):
+            # 动态生成输出文件名：CH4.xlsx → CH4_标准化.xlsx
+            ch_name = os.path.splitext(file_name)[0]
+            output_file = os.path.join(standard_output_dir, f"{ch_name}_标准化.xlsx")
+
+            print(f"\n=====================================")
+            print(f"开始处理：{file_name}")
+            print(f"输出文件：{os.path.basename(output_file)}")
+            print(f"=====================================\n")
+
+            # 调用原有函数处理
+            standardize_cell_data(file_path, output_file, skip_sheet)
+
+    print("\n🎉🎉🎉 所有CH文件标准化处理全部完成！")
