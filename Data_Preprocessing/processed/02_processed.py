@@ -1095,9 +1095,9 @@ def process_cell_growth(
 
 # ---------------------- 脚本执行入口 ----------------------
 if __name__ == "__main__":
-    EXCEL_FILE_PATH = r"F:\Microalgae_Photoes\20260504\数据汇总\02_标准化数据\CH3_标准化.xlsx"
-    RESULT_EXCEL_PATH = r"F:\Microalgae_Photoes\20260504\数据汇总\03_可视化结果\CH3_可视化结果.xlsx"
-    Nitrogen = "160 mg/L"
+    EXCEL_FILE_PATH = r"F:\Microalgae_Photoes\20260504\数据汇总\02_标准化数据\CH6_标准化.xlsx"
+    RESULT_EXCEL_PATH = r"F:\Microalgae_Photoes\20260504\数据汇总\03_可视化结果\CH6_可视化结果.xlsx"
+    Nitrogen = "300 mg/L"
     skip_sheet = {"数据汇总", "👈←25-10-25批次   理论预测17组→👉", "← 👈25-09-26批  理论预测2组👉→"}
     set_valid_num = 97
     result = process_cell_growth(

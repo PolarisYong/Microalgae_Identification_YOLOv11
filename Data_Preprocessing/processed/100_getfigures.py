@@ -3,9 +3,9 @@ import shutil
 
 # ====================== 【请你修改这两个路径！】 ======================
 # 1. CH6文件夹的绝对路径（Windows示例：D:/Data/CH6，Mac/Linux示例：/home/user/Data/CH6）
-SOURCE_ROOT_DIR = r"F:\Microalgae_Photoes\20260504\CH5"
+SOURCE_ROOT_DIR = r"F:\Microalgae_Photoes\ReRun\CH6"
 # 2. 你要存放复制后图片的目标路径（自动创建不存在的文件夹）
-TARGET_SAVE_DIR = r"F:\Microalgae_Photoes\20260504\overlay_05"
+TARGET_SAVE_DIR = r"F:\Microalgae_Photoes\ReRun\overlay_06"
 # =====================================================================
 
 # 固定的图片文件名（无需修改）
