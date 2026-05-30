@@ -13,7 +13,7 @@ import random
 from tqdm import tqdm
 
 
-def split_dataset(classification_folder, train_size=70):
+def split_dataset(classification_folder, train_size=50):
     """
     将classification文件夹中的文件分割为训练集和验证集
 
@@ -135,7 +135,7 @@ def split_dataset(classification_folder, train_size=70):
 
 if __name__ == "__main__":
     # 设置包含所有文件的主文件夹路径
-    classification_folder = r"F:\Microalgae_Photoes\20251002\dataset_labelme\CH6"  # 可以替换为绝对路径，如 "C:/data/classification"
+    classification_folder = r"F:\Microalgae_Photoes\dataset_labelme\selected_250"  # 可以替换为绝对路径，如 "C:/data/classification"
 
     # 检查主文件夹是否存在
     if not os.path.exists(classification_folder) or not os.path.isdir(classification_folder):

@@ -64,12 +64,12 @@ def organize_images(source_dir, target_parent, channel_num):
 
 if __name__ == "__main__":
     # 源文件夹路径（包含99个子文件夹的目录）
-    source_directory = r"F:\Microalgae_Photoes\20260504_02\样本-3-_L120+B-D-E.COM.3"  # 替换为实际源目录路径
+    source_directory = r"F:\Microalgae_Photoes\20260520\样本[3]-L120-B-D-E.COM.3"  # 替换为实际源目录路径
 
     # 目标父目录（将在其中创建以图片名为基础的子文件夹）
-    target_parent_directory = r"F:\Microalgae_Photoes\20260504\CH6"  # 替换为实际目标目录路径
+    target_parent_directory = r"F:\Microalgae_Photoes\20260520\CH9"  # 替换为实际目标目录路径
 
-    channel_num = "6"
+    channel_num = "9"
     # 验证源文件夹
     if not os.path.exists(source_directory) or not os.path.isdir(source_directory):
         print(f"错误: 源文件夹不存在或不是有效的目录 - {source_directory}")

@@ -133,8 +133,8 @@ def convert_labelme_to_yolo(json_folder, output_folder=None, class_names=None):
 
 if __name__ == "__main__":
     # 配置参数
-    json_folder = r"F:\Microalgae_Photoes\20251002\dataset_labelme\CH6"  # LabelMe JSON文件所在文件夹
-    output_folder = r"F:\Microalgae_Photoes\20251002\dataset_labelme\CH6"  # 输出YOLO TXT文件的文件夹
+    json_folder = r"F:\Microalgae_Photoes\20260520\selected_250"  # LabelMe JSON文件所在文件夹
+    output_folder = r"F:\Microalgae_Photoes\20260520\selected_250"  # 输出YOLO TXT文件的文件夹
 
     # 如果你知道具体类别名称，可以在这里指定，例如:
     # class_names = ["microalgae", "cell", "other"]
