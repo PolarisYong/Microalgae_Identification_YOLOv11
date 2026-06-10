@@ -18,7 +18,15 @@ MODEL_PATH = r"E:\pythonProject\Microalgae_Identification_YOLOv11\runs\segment\t
 
 # Update this list if needed.
 ROOT_FOLDERS = [
-    r"F:\Microalgae_Photoes\text_photoes\CH1",
+    r"F:\Microalgae_Photoes\20260531\CH1",
+    r"F:\Microalgae_Photoes\20260531\CH2",
+    r"F:\Microalgae_Photoes\20260531\CH3",
+    r"F:\Microalgae_Photoes\20260531\CH4",
+    r"F:\Microalgae_Photoes\20260531\CH5",
+    r"F:\Microalgae_Photoes\20260531\CH6",
+    r"F:\Microalgae_Photoes\20260531\CH7",
+    r"F:\Microalgae_Photoes\20260531\CH8",
+    r"F:\Microalgae_Photoes\20260531\CH9",
 ]
 
 ACTUAL_WIDTH_UM = 44.3
