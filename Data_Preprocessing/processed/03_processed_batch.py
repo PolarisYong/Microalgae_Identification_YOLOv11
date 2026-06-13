@@ -1,5 +1,7 @@
 import io
 import sys
+import os
+import re
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1096,21 +1098,118 @@ def process_cell_growth(
         wb_original.close()
 
 
-# ---------------------- 脚本执行入口 ----------------------
-if __name__ == "__main__":
-    EXCEL_FILE_PATH = r"F:\Microalgae_Photoes\20260520\数据汇总\02_标准化数据\CH7_标准化.xlsx"
-    RESULT_EXCEL_PATH = r"F:\Microalgae_Photoes\20260520\数据汇总\03_可视化结果\CH7_可视化结果.xlsx"
-    PARAMETERS = "L120-N160-IC5.25%"
-    skip_sheet = {"数据汇总"}
-    set_valid_num = 73
+# ================================== 【配置区：所有可修改参数都在这里】 ==================================
+DATE_STR = "20260531"
+
+# 1. 原始标准化Excel所在的输入文件夹（路径中的日期自动引用上面的变量）
+INPUT_FOLDER = rf"F:\Microalgae_Photoes\{DATE_STR}\数据汇总\02_标准化数据"
+
+# 2. 可视化结果Excel的保存文件夹
+OUTPUT_FOLDER = rf"F:\Microalgae_Photoes\{DATE_STR}\数据汇总\03_可视化结果\96小时"
+
+# 3. 所有Excel共用的全局参数（和原代码参数含义完全一致）
+SKIP_SHEET = {"数据汇总"}       # 需要跳过的工作表名称
+SET_VALID_NUM = 97               # 有效数量阈值
+MIN_DATA_POINTS = 5               # 最少数据点数
+PROCESSING_RESULT_SUFFIX = "_可视化结果_96.xlsx"
+# 4. CH编号与对应实验参数的映射表
+# 格式：CH编号: "Lp1-Np2-ICp3%" 完整参数字符串
+PARAM_MAPPING = {
+    1: "L30-N160-IC5.25%",    # CH7_标准化.xlsx
+    2: "L30-N160-IC5.25%",      # CH8_标准化.xlsx
+    3: "L30-N20-IC0.5%",        # CH9_标准化.xlsx
+    4: "L30-N20-IC10%",  # CH7_标准化.xlsx
+    5: "L30-N300-IC0.5%",  # CH8_标准化.xlsx
+    6: "L30-N300-IC10%",  # CH9_标准化.xlsx
+    7: "L30-N20-IC0.5%",  # CH10_标准化.xlsx
+    8: "L30-N300-IC0.5%",  # CH10_标准化.xlsx
+    9: "L30-N300-IC10%",  # CH10_标准化.xlsx
+    # 继续添加你所有的CH编号和对应参数字符串
+}
+# ======================================================================================================
+
+# 文件名匹配规则：提取CH后的数字编号
+FILE_PATTERN = re.compile(r'^CH(\d{1,2})_标准化\.xlsx$')
+
+
+# -------------------------- 单文件处理逻辑（完全对齐原代码调用） --------------------------
+def process_single_ch(ch_num: int, input_path: str, output_path: str):
+    """
+    处理单个CH的Excel文件，调用原有的process_cell_growth函数
+    """
+    # 从映射表取出对应参数字符串
+    experimental_params = PARAM_MAPPING[ch_num]
+    print(f"\n✅ 正在处理 CH{ch_num}，实验参数：{experimental_params}")
+
+    # 完全按照原代码的参数名和格式调用函数
     result = process_cell_growth(
-        excel_path=EXCEL_FILE_PATH,
-        result_excel_path=RESULT_EXCEL_PATH,
-        min_data_points=5,
-        experimental_parameters=PARAMETERS,
-        skip_sheet_name=skip_sheet,
-        valid_num=set_valid_num,
+        excel_path=input_path,
+        result_excel_path=output_path,
+        min_data_points=MIN_DATA_POINTS,
+        experimental_parameters=experimental_params,
+        skip_sheet_name=SKIP_SHEET,
+        valid_num=SET_VALID_NUM,
     )
+
+    # 处理结果判断和预览（和原代码输出逻辑一致）
     if result is not None:
-        print("\n单独拟合结果预览（含生长阶段时长）：")
+        print(f"\n📊 CH{ch_num} 拟合结果预览（含生长阶段时长）：")
         print(result[["腔室名称", "滞后期时长(h)", "对数期时长(h)", "稳定期时长(h)"]].head())
+        return True
+    else:
+        print(f"❌ CH{ch_num} 处理失败，返回结果为空")
+        return False
+
+
+# -------------------------- 批量主程序 --------------------------
+if __name__ == "__main__":
+    # 1. 自动创建输出文件夹（不存在则新建）
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+    print("=" * 60)
+    print(f"📂 输入文件夹：{INPUT_FOLDER}")
+    print(f"📂 输出文件夹：{OUTPUT_FOLDER}")
+    print(f"⚙️  全局配置：最小数据点={MIN_DATA_POINTS}，有效数量={SET_VALID_NUM}，跳过工作表={SKIP_SHEET}")
+    print("=" * 60)
+
+    # 2. 扫描所有符合命名规则的Excel文件
+    file_list = []
+    for filename in os.listdir(INPUT_FOLDER):
+        match = FILE_PATTERN.match(filename)
+        if match:
+            ch_num = int(match.group(1))
+            input_full_path = os.path.join(INPUT_FOLDER, filename)
+            file_list.append((ch_num, filename, input_full_path))
+
+    if not file_list:
+        print("\n❌ 未找到符合格式的Excel文件（CH数字_标准化.xlsx）")
+    else:
+        print(f"\n✅ 共扫描到 {len(file_list)} 个待处理文件，开始批量处理...")
+        print("-" * 60)
+
+        success_count = 0
+        # 3. 循环逐个处理
+        for idx, (ch_num, filename, input_path) in enumerate(file_list, 1):
+            print(f"\n[{idx}/{len(file_list)}] 文件：{filename}")
+
+            # 检查是否在参数映射表中
+            if ch_num not in PARAM_MAPPING:
+                print(f"⚠️  CH{ch_num} 未配置对应实验参数，跳过该文件")
+                continue
+
+            # 生成输出文件路径：CH7_标准化.xlsx → CH7_可视化结果.xlsx（和原代码命名一致）
+            output_filename = filename.replace("_标准化.xlsx", PROCESSING_RESULT_SUFFIX)
+            output_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+            # 执行单文件处理
+            is_success = process_single_ch(ch_num, input_path, output_path)
+            if is_success:
+                success_count += 1
+
+        # 4. 处理结束统计
+        print("\n" + "=" * 60)
+        print(f"🎉 批量处理全部完成")
+        print(f"   总文件数：{len(file_list)} 个")
+        print(f"   成功处理：{success_count} 个")
+        print(f"   跳过/失败：{len(file_list) - success_count} 个")
+        print(f"   所有结果已保存至：{OUTPUT_FOLDER}")
+        print("=" * 60)
