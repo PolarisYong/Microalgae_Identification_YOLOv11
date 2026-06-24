@@ -454,7 +454,7 @@ def _fit_and_write_individual_sheet(
         "腔室名称": sheet,
         "最大比生长速率μmax (h^-1)": round(fit_result["mu_max"], 4),
         "环境容纳量K (个/腔室)": round(fit_result["K"], 2),
-        "初始细胞数量N0 (个/腔室)": round(fit_result["N0"], 2),
+        "初始细胞数量N0 (个/腔室)": round(fit_result["N0"], 4),
         "拟合优度R²": round(fit_result["r2"], 4),
         "平均细胞周期T_d(h)": round(fit_result["t_d"], 2) if np.isfinite(fit_result["t_d"]) else np.nan,
         "增殖倍数 F": round(F_last_cell_number, 2) if np.isfinite(F_last_cell_number) else np.nan,
@@ -933,7 +933,7 @@ def process_cell_growth(
                 t_data = sheet_data["t"]
                 counts_data = sheet_data["cell_counts"]
                 fig = plt.figure(figsize=(10, 6))
-                plt.scatter(t_data, counts_data, label=f"{plt_name} actual data", color="blue", alpha=0.6)
+                plt.scatter(t_data, counts_data, label=f"Actual data", color="blue", alpha=0.6)
                 merged_curve = modified_logistic_model(
                     t_data,
                     merged_params["mu_max"],
@@ -1100,30 +1100,30 @@ def process_cell_growth(
 
 # ================================== 【配置区：所有可修改参数都在这里】 ==================================
 DATE_STR = "20260531"
-
+VALID_HOURS = "72"
 # 1. 原始标准化Excel所在的输入文件夹（路径中的日期自动引用上面的变量）
 INPUT_FOLDER = rf"F:\Microalgae_Photoes\{DATE_STR}\数据汇总\02_标准化数据"
 
 # 2. 可视化结果Excel的保存文件夹
-OUTPUT_FOLDER = rf"F:\Microalgae_Photoes\{DATE_STR}\数据汇总\03_可视化结果\96小时"
+OUTPUT_FOLDER = rf"F:\Microalgae_Photoes\{DATE_STR}\数据汇总\03_可视化结果\{VALID_HOURS}小时"
 
 # 3. 所有Excel共用的全局参数（和原代码参数含义完全一致）
 SKIP_SHEET = {"数据汇总"}       # 需要跳过的工作表名称
-SET_VALID_NUM = 97               # 有效数量阈值
+SET_VALID_NUM = int(VALID_HOURS) + 1 # 有效数量阈值
 MIN_DATA_POINTS = 5               # 最少数据点数
-PROCESSING_RESULT_SUFFIX = "_可视化结果_96.xlsx"
+PROCESSING_RESULT_SUFFIX = rf"_可视化结果_{VALID_HOURS}.xlsx"
 # 4. CH编号与对应实验参数的映射表
 # 格式：CH编号: "Lp1-Np2-ICp3%" 完整参数字符串
 PARAM_MAPPING = {
-    1: "L30-N160-IC5.25%",    # CH7_标准化.xlsx
-    2: "L30-N160-IC5.25%",      # CH8_标准化.xlsx
-    3: "L30-N20-IC0.5%",        # CH9_标准化.xlsx
-    4: "L30-N20-IC10%",  # CH7_标准化.xlsx
-    5: "L30-N300-IC0.5%",  # CH8_标准化.xlsx
-    6: "L30-N300-IC10%",  # CH9_标准化.xlsx
-    7: "L30-N20-IC0.5%",  # CH10_标准化.xlsx
-    8: "L30-N300-IC0.5%",  # CH10_标准化.xlsx
-    9: "L30-N300-IC10%",  # CH10_标准化.xlsx
+    1: "L30‑N160‑IC5.25%",    # CH7_标准化.xlsx
+    2: "L30‑N160‑IC5.25%",      # CH8_标准化.xlsx
+    3: "L30‑N20‑IC0.5%",        # CH9_标准化.xlsx
+    4: "L30‑N20‑IC10%",  # CH7_标准化.xlsx
+    5: "L30‑N300‑IC0.5%",  # CH8_标准化.xlsx
+    6: "L30‑N300‑IC10%",  # CH9_标准化.xlsx
+    7: "L30‑N20‑IC0.5%",  # CH10_标准化.xlsx
+    8: "L30‑N300‑IC0.5%",  # CH10_标准化.xlsx
+    9: "L30‑N300‑IC10%",  # CH10_标准化.xlsx
     # 继续添加你所有的CH编号和对应参数字符串
 }
 # ======================================================================================================

@@ -15,16 +15,18 @@ from ultralytics import YOLO
 
 MODEL_PATH = r"E:\pythonProject\Microalgae_Identification_YOLOv11\runs\segment\train3\weights\best.pt"
 
+DATE_STR = "20260531"
 # Update this list if needed.
 ROOT_FOLDERS = [
-    r"F:\Microalgae_Photoes\20260520\CH1",
-    r"F:\Microalgae_Photoes\20260520\CH2",
-    r"F:\Microalgae_Photoes\20260520\CH3",
-    r"F:\Microalgae_Photoes\20260520\CH5",
-    r"F:\Microalgae_Photoes\20260520\CH6",
-    r"F:\Microalgae_Photoes\20260520\CH7",
-    r"F:\Microalgae_Photoes\20260520\CH8",
-    r"F:\Microalgae_Photoes\20260520\CH9",
+    rf"F:\Microalgae_Photoes\{DATE_STR}\CH1",
+    rf"F:\Microalgae_Photoes\{DATE_STR}\CH2",
+    rf"F:\Microalgae_Photoes\{DATE_STR}\CH3",
+    rf"F:\Microalgae_Photoes\{DATE_STR}\CH4",
+    rf"F:\Microalgae_Photoes\{DATE_STR}\CH5",
+    rf"F:\Microalgae_Photoes\{DATE_STR}\CH6",
+    rf"F:\Microalgae_Photoes\{DATE_STR}\CH7",
+    rf"F:\Microalgae_Photoes\{DATE_STR}\CH8",
+    rf"F:\Microalgae_Photoes\{DATE_STR}\CH8",
 ]
 
 ACTUAL_WIDTH_UM = 44.3

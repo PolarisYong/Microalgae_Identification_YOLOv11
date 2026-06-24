@@ -8,8 +8,9 @@ def organize_images(source_dir, target_parent, channel_num):
     整理图片文件：将同名图片放入同一文件夹，并按源文件夹序号重命名
 
     参数:
-        source_dir: 包含99个子文件夹的源目录
-        target_parent: 目标父目录，将在其中创建以图片名为基础的子文件夹
+        source_dir: 包含99个子文件夹的源目录（HEIDSTAR.COM.x.y）
+        target_parent: 目标父目录（CHz）
+        channel_num: 通道编号（z值）
     """
     # 正则表达式匹配源文件夹名称，提取括号中的数字（如(001)中的001）
     folder_pattern = r'.*\((\d{3})\)$'
@@ -49,7 +50,7 @@ def organize_images(source_dir, target_parent, channel_num):
                 # 构建目标路径
                 folder_name = os.path.splitext(img_file)[0]
                 target_folder = os.path.join(target_parent, folder_name)
-                # 确保目标文件夹存在（关键修正：每次处理都检查并创建）
+                # 确保目标文件夹存在
                 os.makedirs(target_folder, exist_ok=True)
 
                 source_path = os.path.join(image_dir, img_file)
@@ -59,21 +60,62 @@ def organize_images(source_dir, target_parent, channel_num):
                 shutil.copy2(source_path, target_path)
                 print(f"复制: {img_file} -> {target_folder}/{new_filename}")
 
-    print("\n所有文件处理完成")
+    print("\n当前通道处理完成")
+
+
+def batch_process_root_directory(root_dir):
+    """
+    批处理根目录下的所有HEIDSTAR.COM.x.y格式子文件夹
+
+    参数:
+        root_dir: 根目录（F:\Microalgae_Photoes\20260609）
+    """
+    # 正则匹配HEIDSTAR.COM.x.y格式的文件夹名，提取x和y
+    folder_name_pattern = r'HEIDSTAR\.COM\.(\d+)\.(\d+)$'
+
+    # 遍历根目录下的所有子文件夹
+    for sub_folder in os.listdir(root_dir):
+        sub_folder_path = os.path.join(root_dir, sub_folder)
+
+        # 仅处理目录，且符合命名格式
+        if not os.path.isdir(sub_folder_path):
+            continue
+
+        match = re.match(folder_name_pattern, sub_folder)
+        if not match:
+            print(f"\n跳过不符合HEIDSTAR.COM.x.y格式的文件夹: {sub_folder}")
+            continue
+
+        # 提取x和y并转换为整数
+        x = int(match.group(1))
+        y = int(match.group(2))
+
+        # 计算对应的通道号z
+        z = 3 * (x - 1) + y
+        channel_num = str(z)
+
+        # 构造目标父目录（CHz）
+        target_parent = os.path.join(root_dir, f"CH{z}")
+
+        print(f"\n=====================================")
+        print(f"开始处理: {sub_folder} -> CH{z} (x={x}, y={y}, z={z})")
+        print(f"=====================================")
+
+        # 确保目标目录存在
+        os.makedirs(target_parent, exist_ok=True)
+
+        # 调用整理图片函数
+        organize_images(sub_folder_path, target_parent, channel_num)
+
+    print("\n所有文件夹批处理完成！")
 
 
 if __name__ == "__main__":
-    # 源文件夹路径（包含99个子文件夹的目录）
-    source_directory = r"F:\Microalgae_Photoes\20260531\HEIDSTAR.COM.3.3"  # 替换为实际源目录路径
+    # 根目录（包含所有HEIDSTAR.COM.x.y子文件夹的目录）
+    root_directory = r"F:\Microalgae_Photoes\20260531"
 
-    # 目标父目录（将在其中创建以图片名为基础的子文件夹）
-    target_parent_directory = r"F:\Microalgae_Photoes\20260531\CH9"  # 替换为实际目标目录路径
-
-    channel_num = "9"
-    # 验证源文件夹
-    if not os.path.exists(source_directory) or not os.path.isdir(source_directory):
-        print(f"错误: 源文件夹不存在或不是有效的目录 - {source_directory}")
+    # 验证根目录有效性
+    if not os.path.exists(root_directory) or not os.path.isdir(root_directory):
+        print(f"错误: 根目录不存在或不是有效的目录 - {root_directory}")
     else:
-        # 创建目标父目录（如果不存在）
-        os.makedirs(target_parent_directory, exist_ok=True)
-        organize_images(source_directory, target_parent_directory, channel_num)
+        batch_process_root_directory(root_directory)

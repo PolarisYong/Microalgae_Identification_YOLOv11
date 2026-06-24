@@ -73,11 +73,12 @@ def merge_excel_sheets(ch_root_dir, output_file):
 
 
 if __name__ == "__main__":
+    DATE_STR = "20260531"
     # 1. 修改为【父级根目录】（包含所有CH1/CH2...CH12的文件夹）
-    parent_root = r"F:\Microalgae_Photoes\20260531"
+    parent_root = rf"F:\Microalgae_Photoes\{DATE_STR}"
 
     # 2. 输出文件的基础目录（自动生成CH1.xlsx/CH2.xlsx...）
-    output_base_dir = r"F:\Microalgae_Photoes\20260531\数据汇总\01_原始数据"
+    output_base_dir = rf"F:\Microalgae_Photoes\{DATE_STR}\数据汇总\01_原始数据"
 
     # 自动创建输出目录（防止目录不存在报错）
     os.makedirs(output_base_dir, exist_ok=True)

@@ -89,12 +89,13 @@ def standardize_cell_data(input_file, output_file, skip_sheet_name):
 
 # ===================== 批量处理核心配置（仅修改这里）=====================
 if __name__ == "__main__":
+    DATE_STR = "20260531"
     # 1. 原始数据目录（存放所有CH1.xlsx/CH2.xlsx的文件夹）
-    raw_data_dir = r"F:\Microalgae_Photoes\20260531\数据汇总\01_原始数据"
+    raw_data_dir = rf"F:\Microalgae_Photoes\{DATE_STR}\数据汇总\01_原始数据"
     # 2. 标准化输出目录（自动生成CH1_标准化.xlsx...）
-    standard_output_dir = r"F:\Microalgae_Photoes\20260531\数据汇总\02_标准化数据"
+    standard_output_dir = rf"F:\Microalgae_Photoes\{DATE_STR}\数据汇总\02_标准化数据"
     # 3. 需要跳过的页签（保持你原来的配置不变）
-    skip_sheet = {"数据汇总", "← 👈25-9-26批  25-10-25批👉→", "👉→理论预测 9组"}
+    skip_sheet = {"数据汇总"}
 
     # 自动创建输出目录
     os.makedirs(standard_output_dir, exist_ok=True)
