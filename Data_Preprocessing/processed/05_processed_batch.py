@@ -31,16 +31,59 @@ rcParams["axes.titley"] = 1.01
 
 
 # ---------------------- 1. 定义修正Logistic生长模型 ----------------------
-def modified_logistic_model(t, mu_max, K, N0):
+def modified_logistic_model(t, mu_fit, K, lambda_):
     t = np.asarray(t, dtype=float)
-    if K == 0 or N0 == 0:
-        return np.zeros_like(t, dtype=float)
-    term = (K / N0 - 1) * np.exp(-mu_max * t)
-    N_t = K / (1 + term)
-    return N_t
+    if not np.isfinite(mu_fit) or not np.isfinite(K) or not np.isfinite(lambda_):
+        return np.full_like(t, np.nan, dtype=float)
+
+    delta = max(float(K) - 1.0, 1e-12)
+    mu_fit = max(float(mu_fit), 1e-12)
+    exponent = (4.0 * mu_fit / delta) * (float(lambda_) - t) + 2.0
+    exponent = np.clip(exponent, -700, 700)
+    return 1.0 + delta / (1.0 + np.exp(exponent))
 
 
-def calculate_growth_phases(t, mu_max, K, N0):
+def _growth_curve_time_at_fraction(p, mu_fit, K, lambda_):
+    if not np.isfinite(mu_fit) or not np.isfinite(K) or not np.isfinite(lambda_):
+        return np.nan
+    if p <= 0 or p >= 1:
+        return np.nan
+
+    delta = float(K) - 1.0
+    if delta <= 0 or mu_fit <= 0:
+        return float(lambda_)
+
+    return float(lambda_) + delta / (4.0 * float(mu_fit)) * (2.0 + np.log(p / (1.0 - p)))
+
+
+def _specific_growth_rate_curve(t, mu_fit, K, lambda_):
+    t = np.asarray(t, dtype=float)
+    if not np.isfinite(mu_fit) or not np.isfinite(K) or not np.isfinite(lambda_):
+        return np.full_like(t, np.nan, dtype=float)
+    if K <= 0:
+        return np.full_like(t, np.nan, dtype=float)
+
+    delta = max(float(K) - 1.0, 1e-12)
+    mu_fit = max(float(mu_fit), 1e-12)
+    exponent = (4.0 * mu_fit / delta) * (float(lambda_) - t) + 2.0
+    exponent = np.clip(exponent, -700, 700)
+    exp_term = np.exp(exponent)
+    return 4.0 * mu_fit * exp_term / ((1.0 + exp_term) * (float(K) + exp_term))
+
+
+def _true_specific_growth_rate_peak(mu_fit, K, lambda_):
+    if not np.isfinite(mu_fit) or not np.isfinite(K) or not np.isfinite(lambda_):
+        return np.nan, np.nan
+    if K <= 1.0 or mu_fit <= 0:
+        return np.nan, np.nan
+
+    sqrt_k = np.sqrt(float(K))
+    mu_max_true = 4.0 * float(mu_fit) / (1.0 + sqrt_k) ** 2
+    t_peak = float(lambda_) + (float(K) - 1.0) / (4.0 * float(mu_fit)) * (2.0 - 0.5 * np.log(float(K)))
+    return float(mu_max_true), float(t_peak)
+
+
+def calculate_growth_phases(t, mu_fit, K, lambda_, stable_fraction=0.90):
     t = np.asarray(t, dtype=float)
     if t.size == 0:
         return {
@@ -49,66 +92,49 @@ def calculate_growth_phases(t, mu_max, K, N0):
             "稳定期时长(h)": 0,
         }, []
 
-    term = (K / N0 - 1) * np.exp(-mu_max * t)
-    N_t = K / (1 + term)
+    t_start = float(t[0])
+    t_end = float(t[-1])
+    lag_end = float(lambda_) if np.isfinite(lambda_) else t_start
+    stable_start = _growth_curve_time_at_fraction(stable_fraction, mu_fit, K, lambda_)
+    if not np.isfinite(stable_start):
+        stable_start = lag_end
+    stable_start = max(stable_start, lag_end)
 
-    dt = np.diff(t).mean() if len(t) > 1 else 1
-    if dt == 0:
-        dt = 1
-    slope = np.diff(N_t) / dt
-    slope = np.insert(slope, 0, 0)
-
-    max_slope = np.max(slope) if np.max(slope) > 0 else 1e-6
-    threshold = 0.2 * max_slope
-
-    phase_flags = []
-    for i in range(len(t)):
-        current_slope = slope[i]
-        current_N = N_t[i]
-        if K != 0 and current_slope < threshold and abs(current_N - K) / K < 0.1:
-            phase_flags.append("稳定期")
-        elif current_slope >= threshold:
-            phase_flags.append("对数期")
-        else:
-            phase_flags.append("滞后期")
-
-    phases = []
-    current_phase = phase_flags[0]
-    start_idx = 0
-    for i in range(1, len(phase_flags)):
-        if phase_flags[i] != current_phase:
-            start_time = t[start_idx]
-            # 边界归后段：前一阶段结束在下一阶段起点，保证总时长不丢失边界小时
-            end_time = t[i]
-            duration = end_time - start_time
-            phases.append({
-                "阶段": current_phase,
-                "开始时间(h)": start_time,
-                "结束时间(h)": end_time,
-                "时长(h)": duration,
-            })
-            current_phase = phase_flags[i]
-            start_idx = i
-
-    start_time = t[start_idx]
-    end_time = t[-1]
-    duration = end_time - start_time
-    phases.append({
-        "阶段": current_phase,
-        "开始时间(h)": start_time,
-        "结束时间(h)": end_time,
-        "时长(h)": duration,
-    })
+    lag_duration = max(min(lag_end, t_end) - t_start, 0.0)
+    log_start = max(lag_end, t_start)
+    log_end = min(stable_start, t_end)
+    log_duration = max(log_end - log_start, 0.0)
+    stable_duration = max(t_end - max(stable_start, t_start), 0.0)
 
     phase_duration = {
-        "滞后期时长(h)": 0,
-        "对数期时长(h)": 0,
-        "稳定期时长(h)": 0,
+        "滞后期时长(h)": round(lag_duration, 2),
+        "对数期时长(h)": round(log_duration, 2),
+        "稳定期时长(h)": round(stable_duration, 2),
     }
-    for phase in phases:
-        key = f"{phase['阶段']}时长(h)"
-        if key in phase_duration:
-            phase_duration[key] = round(max(phase["时长(h)"], 0), 2)
+    lag_phase_end = min(max(lag_end, t_start), t_end)
+    stable_phase_start = min(max(stable_start, t_start), t_end)
+    log_phase_start = lag_phase_end
+    log_phase_end = min(max(stable_start, log_phase_start), t_end)
+    phases = [
+        {
+            "阶段": "滞后期",
+            "开始时间(h)": t_start,
+            "结束时间(h)": lag_phase_end,
+            "时长(h)": lag_duration,
+        },
+        {
+            "阶段": "对数期",
+            "开始时间(h)": log_phase_start,
+            "结束时间(h)": log_phase_end,
+            "时长(h)": log_duration,
+        },
+        {
+            "阶段": "稳定期",
+            "开始时间(h)": stable_phase_start,
+            "结束时间(h)": t_end,
+            "时长(h)": stable_duration,
+        },
+    ]
     return phase_duration, phases
 
 
@@ -125,6 +151,7 @@ def _empty_summary_row(sheet_name):
         "最大比生长速率μmax (h^-1)": np.nan,
         "环境容纳量K (个/腔室)": np.nan,
         "初始细胞数量N0 (个/腔室)": np.nan,
+        "滞止期参数λ(h)": np.nan,
         "拟合优度R²": np.nan,
         "平均细胞周期T_d(h)": np.nan,
         "增殖倍数 F": np.nan,
@@ -132,6 +159,7 @@ def _empty_summary_row(sheet_name):
         "滞后期时长(h)": np.nan,
         "对数期时长(h)": np.nan,
         "稳定期时长(h)": np.nan,
+        "稳定期起始t90(h)": np.nan,
     }
 
 
@@ -175,7 +203,19 @@ def _insert_image(ws, buffer, anchor, width, height):
     ws.add_image(img, anchor)
 
 
-def _fit_logistic_curve(t, cell_counts, mu_guess=0.1, k_guess=None, n0_guess=None):
+def _modified_logistic_fit_model(t, mu_fit, K, lambda_):
+    t = np.asarray(t, dtype=float)
+    if not np.isfinite(mu_fit) or not np.isfinite(K) or not np.isfinite(lambda_):
+        return np.full_like(t, np.nan, dtype=float)
+
+    delta = max(float(K) - 1.0, 1e-12)
+    mu_fit = max(float(mu_fit), 1e-12)
+    exponent = (4.0 * mu_fit / delta) * (float(lambda_) - t) + 2.0
+    exponent = np.clip(exponent, -700, 700)
+    return 1.0 + delta / (1.0 + np.exp(exponent))
+
+
+def _fit_logistic_curve(t, cell_counts, mu_guess=0.1, k_guess=None):
     t = np.asarray(t, dtype=float)
     cell_counts = np.asarray(cell_counts, dtype=float)
 
@@ -187,46 +227,48 @@ def _fit_logistic_curve(t, cell_counts, mu_guess=0.1, k_guess=None, n0_guess=Non
     max_count = float(np.max(cell_counts)) if cell_counts.size else 1.0
     if k_guess is None:
         k_guess = max(max_count, 1.0)
-    if n0_guess is None:
-        positive_counts = cell_counts[cell_counts > 0]
-        if cell_counts[0] > 0:
-            n0_guess = float(cell_counts[0])
-        elif positive_counts.size > 0:
-            n0_guess = float(positive_counts[0])
-        else:
-            n0_guess = 1e-6
-
-    mu_candidates = [mu_guess, max(mu_guess * 0.5, 1e-4), 0.2, 0.05]
+    mu_candidates = [mu_guess, max(mu_guess * 0.5, 1e-4), 0.2, 0.5, 1.0, 2.0, 5.0, 10.0]
     last_error = None
-    upper_k = max(float(k_guess) * 1.5, 0.2)
-    upper_n0 = max(max_count * 0.5 if max_count > 0 else 10.0, float(n0_guess) * 1.5, 1e-6)
+    t_span = max(float(t[-1] - t[0]), 1.0)
+    lambda_guess_index = min(len(t) - 1, max(1, int(round(len(t) * 0.2))))
+    lambda_guess = float(t[lambda_guess_index]) if len(t) > 1 else float(t[0])
+    k_upper = max(max_count * 10.0, float(k_guess) * 5.0, 1.0)
+    # N(t) 曲线参数不要卡得太死；真正的 μmax 会在拟合后由 d[ln N(t)]/dt 计算。
     bounds = (
-        [1e-6, 0.1, 1e-6],
-        [1.0, upper_k, upper_n0],
+        [1e-6, 1.000001, float(t[0]) - t_span],
+        [50.0, k_upper, float(t[-1]) + t_span],
     )
 
     for candidate_mu in mu_candidates:
-        initial_guess = np.array([candidate_mu, k_guess, n0_guess], dtype=float)
+        initial_guess = np.array([candidate_mu, k_guess, lambda_guess], dtype=float)
         initial_guess = np.clip(initial_guess, np.array(bounds[0]) + 1e-12, np.array(bounds[1]) - 1e-12)
         try:
             popt, _ = curve_fit(
-                f=modified_logistic_model,
+                f=_modified_logistic_fit_model,
                 xdata=t,
                 ydata=cell_counts,
                 p0=initial_guess,
                 bounds=bounds,
-                maxfev=10000,
+                maxfev=20000,
             )
-            mu_max_fit, K_fit, N0_fit = popt
-            y_fit = modified_logistic_model(t, mu_max_fit, K_fit, N0_fit)
+            mu_fit, K_fit, lambda_fit = popt
+            y_fit = modified_logistic_model(t, mu_fit, K_fit, lambda_fit)
+            mu_max_true, mu_max_t = _true_specific_growth_rate_peak(mu_fit, K_fit, lambda_fit)
             ss_res = float(np.sum((cell_counts - y_fit) ** 2))
             ss_tot = float(np.sum((cell_counts - np.mean(cell_counts)) ** 2))
             r2 = 1 - (ss_res / ss_tot) if ss_tot != 0 else np.nan
-            t_d = np.log(2) / mu_max_fit if mu_max_fit != 0 else np.nan
+            t_d = (
+                np.log(2) / mu_max_true
+                if np.isfinite(mu_max_true) and mu_max_true > 0
+                else np.nan
+            )
             return {
-                "mu_max": float(mu_max_fit),
-                "K": float(K_fit),
-                "N0": float(N0_fit),
+                "mu_fit": float(mu_fit),
+                "mu_max": float(mu_max_true),
+                "mu_max_t": float(mu_max_t),
+                "K": K_fit,
+                "N0": 1.0,
+                "lambda_": float(lambda_fit),
                 "r2": float(r2),
                 "t_d": float(t_d),
                 "y_fit": y_fit,
@@ -259,18 +301,11 @@ def _build_subset_fit(
     merged_counts = np.concatenate([record["cell_counts"][:valid_num] for record in selected_records])
 
     try:
-        n0_guess_values = [
-            float(record["cell_counts"][0])
-            for record in selected_records
-            if len(record["cell_counts"]) > 0 and record["cell_counts"][0] > 0
-        ]
-        n0_guess = float(np.mean(n0_guess_values)) if n0_guess_values else None
         fit = _fit_logistic_curve(
             merged_t,
             merged_counts,
             mu_guess=0.1,
             k_guess=float(np.max(merged_counts)) if merged_counts.size else 1.0,
-            n0_guess=n0_guess,
         )
     except Exception:
         fit_cache[key] = None
@@ -278,13 +313,14 @@ def _build_subset_fit(
 
     sorted_t = np.sort(merged_t)
     phase_t = np.unique(np.concatenate([record["t"][:valid_num] for record in selected_records]))
-    phase_duration, _ = calculate_growth_phases(phase_t, fit["mu_max"], fit["K"], fit["N0"])
+    phase_duration, _ = calculate_growth_phases(phase_t, fit["mu_fit"], fit["K"], fit["lambda_"])
+    t90 = _growth_curve_time_at_fraction(0.90, fit["mu_fit"], fit["K"], fit["lambda_"])
     residuals = {
         record["sheet"]: float(
             np.sum(
                 (
                     record["cell_counts"][:valid_num]
-                    - modified_logistic_model(record["t"][:valid_num], fit["mu_max"], fit["K"], fit["N0"])
+                    - modified_logistic_model(record["t"][:valid_num], fit["mu_fit"], fit["K"], fit["lambda_"])
                 )
                 ** 2
             )
@@ -293,11 +329,14 @@ def _build_subset_fit(
     }
     result = {
         "valid_sheets": [record["sheet"] for record in selected_records],
+        "mu_fit": fit["mu_fit"],
         "mu_max": fit["mu_max"],
         "K": fit["K"],
         "N0": fit["N0"],
+        "lambda_": fit["lambda_"],
         "r2": fit["r2"],
         "t_d": fit["t_d"],
+        "t90": t90,
         "merged_t": merged_t,
         "merged_counts": merged_counts,
         "sorted_t": sorted_t,
@@ -439,7 +478,8 @@ def _fit_and_write_individual_sheet(
     df,
 ):
     fit_result = _fit_logistic_curve(t, cell_counts)
-    phase_duration, _ = calculate_growth_phases(t, fit_result["mu_max"], fit_result["K"], fit_result["N0"])
+    phase_duration, _ = calculate_growth_phases(t, fit_result["mu_fit"], fit_result["K"], fit_result["lambda_"])
+    t90 = _growth_curve_time_at_fraction(0.90, fit_result["mu_fit"], fit_result["K"], fit_result["lambda_"])
     lag_duration = phase_duration["滞后期时长(h)"]
     log_duration = phase_duration["对数期时长(h)"]
     stable_duration = phase_duration["稳定期时长(h)"]
@@ -454,7 +494,8 @@ def _fit_and_write_individual_sheet(
         "腔室名称": sheet,
         "最大比生长速率μmax (h^-1)": round(fit_result["mu_max"], 4),
         "环境容纳量K (个/腔室)": round(fit_result["K"], 2),
-        "初始细胞数量N0 (个/腔室)": round(fit_result["N0"], 4),
+        "初始细胞数量N0 (个/腔室)": 1.0,
+        "滞止期参数λ(h)": round(fit_result["lambda_"], 4),
         "拟合优度R²": round(fit_result["r2"], 4),
         "平均细胞周期T_d(h)": round(fit_result["t_d"], 2) if np.isfinite(fit_result["t_d"]) else np.nan,
         "增殖倍数 F": round(F_last_cell_number, 2) if np.isfinite(F_last_cell_number) else np.nan,
@@ -462,6 +503,7 @@ def _fit_and_write_individual_sheet(
         "滞后期时长(h)": lag_duration,
         "对数期时长(h)": log_duration,
         "稳定期时长(h)": stable_duration,
+        "稳定期起始t90(h)": round(t90, 2) if np.isfinite(t90) else np.nan,
     }
 
     fig = plt.figure(figsize=(10, 6))
@@ -476,6 +518,7 @@ def _fit_and_write_individual_sheet(
         f"$\\it{{μ}}_{{\\mathrm{{max}}}}$= {round(fit_result['mu_max'], 4)} h⁻¹\n"
         f"$\\it{{K}}$ = {round(fit_result['K'], 2)}\n"
         f"$\\it{{N}}_{{0}}$ = {round(fit_result['N0'], 2)}\n"
+        f"$\\it{{λ}}$ = {round(fit_result['lambda_'], 2)}\n"
         f"R² = {round(fit_result['r2'], 4)}"
     )
     plt.text(
@@ -500,20 +543,24 @@ def _fit_and_write_individual_sheet(
     ws.cell(row=3, column=param_col_start + 1).value = round(fit_result["K"], 4)
     ws.cell(row=4, column=param_col_start).value = "初始细胞数量N0(个)"
     ws.cell(row=4, column=param_col_start + 1).value = round(fit_result["N0"], 4)
-    ws.cell(row=5, column=param_col_start).value = "拟合优度R²"
-    ws.cell(row=5, column=param_col_start + 1).value = round(fit_result["r2"], 4)
-    ws.cell(row=6, column=param_col_start).value = "平均细胞周期T_d(h)"
-    ws.cell(row=6, column=param_col_start + 1).value = round(fit_result["t_d"], 2) if np.isfinite(fit_result["t_d"]) else np.nan
-    ws.cell(row=7, column=param_col_start).value = "增殖倍数 F"
-    ws.cell(row=7, column=param_col_start + 1).value = round(F_last_cell_number, 2) if np.isfinite(F_last_cell_number) else np.nan
-    ws.cell(row=8, column=param_col_start).value = "生长效率 η (1/增殖倍数)"
-    ws.cell(row=8, column=param_col_start + 1).value = round(growth_rate, 3) if np.isfinite(growth_rate) else np.nan
-    ws.cell(row=9, column=param_col_start).value = "滞后期时长(h)"
-    ws.cell(row=9, column=param_col_start + 1).value = lag_duration
-    ws.cell(row=10, column=param_col_start).value = "对数期时长(h)"
-    ws.cell(row=10, column=param_col_start + 1).value = log_duration
-    ws.cell(row=11, column=param_col_start).value = "稳定期时长(h)"
-    ws.cell(row=11, column=param_col_start + 1).value = stable_duration
+    ws.cell(row=5, column=param_col_start).value = "滞止期参数λ(h)"
+    ws.cell(row=5, column=param_col_start + 1).value = round(fit_result["lambda_"], 4)
+    ws.cell(row=6, column=param_col_start).value = "拟合优度R²"
+    ws.cell(row=6, column=param_col_start + 1).value = round(fit_result["r2"], 4)
+    ws.cell(row=7, column=param_col_start).value = "平均细胞周期T_d(h)"
+    ws.cell(row=7, column=param_col_start + 1).value = round(fit_result["t_d"], 2) if np.isfinite(fit_result["t_d"]) else np.nan
+    ws.cell(row=8, column=param_col_start).value = "增殖倍数 F"
+    ws.cell(row=8, column=param_col_start + 1).value = round(F_last_cell_number, 2) if np.isfinite(F_last_cell_number) else np.nan
+    ws.cell(row=9, column=param_col_start).value = "生长效率 η (1/增殖倍数)"
+    ws.cell(row=9, column=param_col_start + 1).value = round(growth_rate, 3) if np.isfinite(growth_rate) else np.nan
+    ws.cell(row=10, column=param_col_start).value = "滞后期时长(h)"
+    ws.cell(row=10, column=param_col_start + 1).value = lag_duration
+    ws.cell(row=11, column=param_col_start).value = "对数期时长(h)"
+    ws.cell(row=11, column=param_col_start + 1).value = log_duration
+    ws.cell(row=12, column=param_col_start).value = "稳定期时长(h)"
+    ws.cell(row=12, column=param_col_start + 1).value = stable_duration
+    ws.cell(row=13, column=param_col_start).value = "稳定期起始t90(h)"
+    ws.cell(row=13, column=param_col_start + 1).value = round(t90, 2) if np.isfinite(t90) else np.nan
     _insert_image(ws, img_buffer, "H02", 600, 400)
 
     return row
@@ -723,7 +770,7 @@ def process_cell_growth(
                 summary_map[sheet] = row
                 continue
 
-            t = np.arange(1, len(cell_counts) + 1)
+            t = np.arange(len(cell_counts), dtype=float)
             record = {
                 "sheet": sheet,
                 "t": t,
@@ -771,6 +818,7 @@ def process_cell_growth(
                     f"μmax={merged_params['mu_max']:.6f}, "
                     f"K={merged_params['K']:.6f}, "
                     f"N0={merged_params['N0']:.6f}, "
+                    f"λ={merged_params['lambda_']:.6f}, "
                     f"R²={merged_params['r2']:.6f}"
                 )
 
@@ -788,9 +836,9 @@ def process_cell_growth(
                     sorted_t,
                     modified_logistic_model(
                         sorted_t,
-                        merged_params["mu_max"],
+                        merged_params["mu_fit"],
                         merged_params["K"],
-                        merged_params["N0"],
+                        merged_params["lambda_"],
                     ),
                     label="Merged fitted curve",
                     color="#F2BA02",
@@ -809,6 +857,7 @@ def process_cell_growth(
                     f"$\\it{{μ}}_{{\\mathrm{{max}}}}$ = {merged_params['mu_max']:.4f} h⁻¹\n"
                     f"$\\it{{K}}$ = {merged_params['K']:.2f}\n"
                     f"$\\it{{N}}_{{0}}$ = {merged_params['N0']:.2f}\n"
+                    f"$\\it{{λ}}$ = {merged_params['lambda_']:.2f}\n"
                     f"R² = {merged_params['r2']:.4f}"
                 )
                 plt.text(
@@ -825,9 +874,9 @@ def process_cell_growth(
                 merged_img_buffer = _save_figure_to_buffer(fig)
                 merged_params["phase_duration"], _ = calculate_growth_phases(
                     merged_params["phase_t"],
-                    merged_params["mu_max"],
+                    merged_params["mu_fit"],
                     merged_params["K"],
-                    merged_params["N0"],
+                    merged_params["lambda_"],
                 )
             else:
                 if best_merged_result is not None:
@@ -853,6 +902,7 @@ def process_cell_growth(
         summary_ws["I1"] = "滞后期时长(h)"
         summary_ws["J1"] = "对数期时长(h)"
         summary_ws["K1"] = "稳定期时长(h)"
+        summary_ws["L1"] = "滞止期参数λ(h)"
 
         selected_sheets = merged_params.get("valid_sheets", []) if merged_params else []
         valid_data = [item for item in individual_summary if item["腔室名称"] in selected_sheets]
@@ -871,11 +921,12 @@ def process_cell_growth(
             summary_ws[f"I{current_row}"] = data["滞后期时长(h)"]
             summary_ws[f"J{current_row}"] = data["对数期时长(h)"]
             summary_ws[f"K{current_row}"] = data["稳定期时长(h)"]
+            summary_ws[f"L{current_row}"] = data["滞止期参数λ(h)"]
             current_row += 1
 
         if non_valid_data:
             summary_ws[f"A{current_row}"] = "未参与拟合数据"
-            summary_ws.merge_cells(f"A{current_row}:K{current_row}")
+            summary_ws.merge_cells(f"A{current_row}:L{current_row}")
             summary_ws[f"A{current_row}"].font = openpyxl.styles.Font(bold=True, color="FF0000")
             current_row += 1
 
@@ -891,11 +942,12 @@ def process_cell_growth(
             summary_ws[f"I{current_row}"] = data["滞后期时长(h)"]
             summary_ws[f"J{current_row}"] = data["对数期时长(h)"]
             summary_ws[f"K{current_row}"] = data["稳定期时长(h)"]
+            summary_ws[f"L{current_row}"] = data["滞止期参数λ(h)"]
             current_row += 1
 
         for col in ["A", "B", "C", "D", "E", "F", "G", "H"]:
             summary_ws.column_dimensions[col].width = 25
-        for col in ["I", "J", "K"]:
+        for col in ["I", "J", "K", "L"]:
             summary_ws.column_dimensions[col].width = 20
 
         reserve_row = current_row + 1
@@ -911,10 +963,12 @@ def process_cell_growth(
                 "最大比生长速率μmax (h^-1)": round(merged_params["mu_max"], 4),
                 "环境容纳量K (个/腔室)": round(merged_params["K"], 2),
                 "初始细胞数量N0 (个/腔室)": round(merged_params["N0"], 2),
+                "滞止期参数λ(h)": round(merged_params["lambda_"], 2),
                 "拟合优度R²": round(merged_params["r2"], 4),
                 "滞后期时长(h)": merged_phase_duration["滞后期时长(h)"],
                 "对数期时长(h)": merged_phase_duration["对数期时长(h)"],
                 "稳定期时长(h)": merged_phase_duration["稳定期时长(h)"],
+                "稳定期起始t90(h)": round(merged_params["t90"], 2) if np.isfinite(merged_params.get("t90", np.nan)) else np.nan,
             }
             current_row = last_row + 1
             for param, value in param_rows.items():
@@ -936,9 +990,9 @@ def process_cell_growth(
                 plt.scatter(t_data, counts_data, label=f"Actual data", color="blue", alpha=0.6)
                 merged_curve = modified_logistic_model(
                     t_data,
-                    merged_params["mu_max"],
+                    merged_params["mu_fit"],
                     merged_params["K"],
-                    merged_params["N0"],
+                    merged_params["lambda_"],
                 )
                 plt.plot(t_data, merged_curve, label="Merged fitted curve", color="#F2BA02", linewidth=2)
                 ax = plt.gca()
@@ -950,6 +1004,7 @@ def process_cell_growth(
                     f"$\\it{{μ}}_{{\\mathrm{{max}}}}$ = {merged_params['mu_max']:.4f} h⁻¹\n"
                     f"$\\it{{K}}$ = {merged_params['K']:.2f}\n"
                     f"$\\it{{N}}_{{0}}$ = {merged_params['N0']:.2f}\n"
+                    f"$\\it{{λ}}$ = {merged_params['lambda_']:.2f}\n"
                     f"R² = {merged_params['r2']:.4f}"
                 )
                 plt.text(
@@ -1099,34 +1154,115 @@ def process_cell_growth(
 
 
 # ================================== 【配置区：所有可修改参数都在这里】 ==================================
-DATE_STR = "20260609"
-VALID_HOURS = "36"
+DATE_STR = "20260712"
+VALID_HOURS = "96"
 # 1. 原始标准化Excel所在的输入文件夹（路径中的日期自动引用上面的变量）
-# INPUT_FOLDER = rf"F:\Microalgae_Photoes\{DATE_STR}\数据汇总\02_标准化数据"
-INPUT_FOLDER = rf"F:\Microalgae_Photoes\Archive\20260609\数据汇总\02_标准化数据"
+INPUT_FOLDER = rf"F:\Microalgae_Photoes\0828_μmax_revision\{DATE_STR}\数据汇总\02_标准化数据"
 # 2. 可视化结果Excel的保存文件夹
-# OUTPUT_FOLDER = rf"F:\Microalgae_Photoes\{DATE_STR}\数据汇总\03_可视化结果\{VALID_HOURS}小时"
-OUTPUT_FOLDER = rf"F:\Microalgae_Photoes\Archive\20260609\数据汇总\03_可视化结果\{VALID_HOURS}小时"
+OUTPUT_FOLDER = rf"F:\Microalgae_Photoes\0828_μmax_revision\{DATE_STR}\数据汇总\03_可视化结果\{VALID_HOURS}小时"
 # 3. 所有Excel共用的全局参数（和原代码参数含义完全一致）
-SKIP_SHEET = {"数据汇总"}       # 需要跳过的工作表名称
+SKIP_SHEET = {"数据汇总"}              # 需要跳过的工作表名称
 SET_VALID_NUM = int(VALID_HOURS) + 1 # 有效数量阈值
 MIN_DATA_POINTS = 5               # 最少数据点数
 PROCESSING_RESULT_SUFFIX = rf"_可视化结果_{VALID_HOURS}.xlsx"
 # 4. CH编号与对应实验参数的映射表
 # 格式：CH编号: "Lp1-Np2-ICp3%" 完整参数字符串
+
+# 0712
 PARAM_MAPPING = {
-    1: "L210‑N160‑IC5.25%",    # CH7_标准化.xlsx
-    2: "L210‑N20‑IC0.5%",      # CH8_标准化.xlsx
-    3: "L210‑N20‑IC10%",        # CH9_标准化.xlsx
-    4: "L210‑N300‑IC0.5%",  # CH7_标准化.xlsx
-    5: "L210‑N300‑IC10%",  # CH8_标准化.xlsx
-    6: "L210‑N160‑IC5.25%",  # CH9_标准化.xlsx
-    7: "L210-N20-IC10%-OC2",  # CH10_标准化.xlsx
-    8: "L210-N160-IC5.25%-OC2",  # CH10_标准化.xlsx
-    9: "L30‑N300‑IC10%",  # CH10_标准化.xlsx
+    1: "L120‑N20‑IC5.25%",    # CH7_标准化.xlsx
+    2: "L120‑N20‑IC5.25%",      # CH8_标准化.xlsx
+    3: "L120‑N160‑IC5.25%",        # CH9_标准化.xlsx
+    4: "L120‑N160‑IC5.25%",  # CH7_标准化.xlsx
+    5: "L120‑N160‑IC5.25%",  # CH8_标准化.xlsx
+    6: "L120‑N160‑IC5.25%",  # CH9_标准化.xlsx
+    7: "L120‑N160‑IC0.5%",  # CH10_标准化.xlsx
+    8: "L120‑N160‑IC0.5%",  # CH10_标准化.xlsx
+    9: "L120‑N160‑IC10%",  # CH9_标准化.xlsx
+    10: "L120‑N160‑IC0.5%",  # CH10_标准化.xlsx
+    11: "L120‑N300‑IC5.25%",  # CH10_标准化.xlsx
+    12: "L120‑N300‑IC5.25%",  # CH10_标准化.xlsx
     # 继续添加你所有的CH编号和对应参数字符串
 }
+
+# 0625
+# PARAM_MAPPING = {
+#     1: "L210-N20-IC10%-OC2",    # CH7_标准化.xlsx
+#     2: "L210-N160-IC5.25%-OC2",      # CH8_标准化.xlsx
+#     3: "L210-N300-IC0.5%-OC2",        # CH9_标准化.xlsx
+#     4: "L210-N20-IC10%-OC2",  # CH7_标准化.xlsx
+#     5: "L210-N160-IC5.25%-OC2",  # CH8_标准化.xlsx
+#     6: "L210-N300-IC0.5%-OC2",  # CH9_标准化.xlsx
+#     7: "L210-N20-IC10%-OC2",  # CH10_标准化.xlsx
+#     8: "L210-N160-IC5.25%-OC2",  # CH10_标准化.xlsx
+#     # 继续添加你所有的CH编号和对应参数字符串
+# }
+
+# 0504
+# PARAM_MAPPING = {
+#     1: "L120‑N160‑IC5.25%",    # CH7_标准化.xlsx
+#     2: "L120‑N160‑IC5.25%",      # CH8_标准化.xlsx
+#     3: "L120‑N20‑IC5.25%",        # CH9_标准化.xlsx
+#     4: "L120‑N160‑IC5.25%",  # CH7_标准化.xlsx
+#     5: "L120‑N160‑IC10%",  # CH8_标准化.xlsx
+#     6: "L120‑N300‑IC5.25%",  # CH9_标准化.xlsx
+#     7: "L210-N20-IC10%-OC2",  # CH10_标准化.xlsx
+#     8: "L210-N160-IC5.25%-OC2",  # CH10_标准化.xlsx
+#     9: "L30‑N300‑IC10%",  # CH10_标准化.xlsx
+#     # 继续添加你所有的CH编号和对应参数字符串
+# }
+
+# 0520
+# PARAM_MAPPING = {
+#     1: "L120‑N160‑IC0.5%",    # CH7_标准化.xlsx
+#     2: "L120‑N160‑IC0.5%",      # CH8_标准化.xlsx
+#     3: "L120‑N160‑IC5.25%",        # CH9_标准化.xlsx
+#     4: "L30‑N20‑IC10%",  # CH7_标准化.xlsx
+#     5: "L120‑N20‑IC5.25%",  # CH8_标准化.xlsx
+#     6: "L120‑N300‑IC5.25%",  # CH9_标准化.xlsx
+#     7: "L120‑N160‑IC5.25%",  # CH10_标准化.xlsx
+#     8: "L120‑N160‑IC10%",  # CH10_标准化.xlsx
+#     9: "L120‑N300‑IC5.25%",  # CH10_标准化.xlsx
+#     # 继续添加你所有的CH编号和对应参数字符串
+# }
+
+# # 0531
+# PARAM_MAPPING = {
+#     1: "L30‑N160‑IC5.25%",    # CH7_标准化.xlsx
+#     2: "L30‑N160‑IC5.25%",      # CH8_标准化.xlsx
+#     3: "L30‑N20‑IC0.5%",        # CH9_标准化.xlsx
+#     4: "L30‑N20‑IC10%",  # CH7_标准化.xlsx
+#     5: "L30‑N300‑IC0.5%",  # CH8_标准化.xlsx
+#     6: "L30‑N300‑IC10%",  # CH9_标准化.xlsx
+#     7: "L30‑N20‑IC0.5%",  # CH10_标准化.xlsx
+#     8: "L30‑N300‑IC0.5%",  # CH10_标准化.xlsx
+#     9: "L30‑N300‑IC10%",  # CH10_标准化.xlsx
+#     # 继续添加你所有的CH编号和对应参数字符串
+# }
+
+# 0609
+# PARAM_MAPPING = {
+#     1: "L210‑N160‑IC5.25%",    # CH7_标准化.xlsx
+#     2: "L210‑N20‑IC0.5%",      # CH8_标准化.xlsx
+#     3: "L210‑N20‑IC10%",        # CH9_标准化.xlsx
+#     4: "L210‑N300‑IC0.5%",  # CH7_标准化.xlsx
+#     5: "L210‑N300‑IC10%",  # CH8_标准化.xlsx
+#     6: "L210‑N160‑IC5.25%",  # CH9_标准化.xlsx
+#     # 继续添加你所有的CH编号和对应参数字符串
+# }
+
+# 0618
+# PARAM_MAPPING = {
+#     1: "L30‑N20‑IC0.5%-OC2",    # CH7_标准化.xlsx
+#     2: "L30‑N300‑IC10%-OC2",      # CH8_标准化.xlsx
+#     3: "L30‑N160‑IC5.25%-OC2",        # CH9_标准化.xlsx
+#     4: "L30‑N20‑IC0.5%-OC2",  # CH7_标准化.xlsx
+#     5: "L30‑N300‑IC10%-OC2",  # CH8_标准化.xlsx
+#     6: "L30‑N160‑IC5.25%-OC2",  # CH9_标准化.xlsx
+#     # 继续添加你所有的CH编号和对应参数字符串
+# }
 # ======================================================================================================
+
 
 # 文件名匹配规则：提取CH后的数字编号
 FILE_PATTERN = re.compile(r'^CH(\d{1,2})_标准化\.xlsx$')
@@ -1154,7 +1290,7 @@ def process_single_ch(ch_num: int, input_path: str, output_path: str):
     # 处理结果判断和预览（和原代码输出逻辑一致）
     if result is not None:
         print(f"\n📊 CH{ch_num} 拟合结果预览（含生长阶段时长）：")
-        print(result[["腔室名称", "滞后期时长(h)", "对数期时长(h)", "稳定期时长(h)"]].head())
+        print(result[["腔室名称", "滞止期参数λ(h)", "滞后期时长(h)", "对数期时长(h)", "稳定期时长(h)", "稳定期起始t90(h)"]].head())
         return True
     else:
         print(f"❌ CH{ch_num} 处理失败，返回结果为空")

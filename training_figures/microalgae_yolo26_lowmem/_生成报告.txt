@@ -1,0 +1,10 @@
+run: E:\pythonProject\Microalgae_Identification_YOLOv11\runs\segment\microalgae_yolo26_lowmem
+epochs: 203
+输出目录: E:\pythonProject\Microalgae_Identification_YOLOv11\training_figures\microalgae_yolo26_lowmem
+生成图表:
+最佳 epoch: 169 (mAP50(B)=0.8299, mAP50-95(B)=0.5169)
+最佳 Mask: epoch 146 (mAP50(M)=0.8046, mAP50-95(M)=0.4513)
+  - 01_loss_curves.png
+  - 02_map_curves.png
+  - 03_precision_recall_curves.png
+  - 04_lr_schedule.png

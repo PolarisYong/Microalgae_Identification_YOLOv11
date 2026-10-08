@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全图 + 分块双通道混合推理方案说明</title>
+<style>
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    max-width: 860px; margin: 0 auto; padding: 48px 32px 80px;
+    color: #2C2C2A; background: #FFFFFF; line-height: 1.85; font-size: 15px;
+  }
+  h1 { font-size: 24px; font-weight: 500; margin: 0 0 8px; letter-spacing: 0.5px; }
+  .sub { color: #5F5E5A; font-size: 13px; margin-bottom: 40px; }
+  h2 { font-size: 18px; font-weight: 500; margin: 40px 0 14px; padding-bottom: 8px; border-bottom: 1px solid #D3D1C7; }
+  h3 { font-size: 15px; font-weight: 500; margin: 24px 0 8px; color: #0C447C; }
+  p { margin: 0 0 14px; text-align: justify; }
+  ul, ol { margin: 0 0 14px; padding-left: 24px; }
+  li { margin-bottom: 8px; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0 20px; font-size: 14px; }
+  th, td { border: 1px solid #D3D1C7; padding: 9px 12px; text-align: left; }
+  th { background: #F1EFE8; font-weight: 500; }
+  td.num { font-variant-numeric: tabular-nums; }
+  code { font-family: Consolas, "Courier New", monospace; background: #F1EFE8;
+         padding: 1px 5px; border-radius: 3px; font-size: 13px; }
+  .key { background: #E6F1FB; border-left: 3px solid #185FA5; padding: 14px 18px; margin: 18px 0; }
+  .note { background: #FAEEDA; border-left: 3px solid #854F0B; padding: 14px 18px; margin: 18px 0; }
+  .key p:last-child, .note p:last-child { margin-bottom: 0; }
+  .fig { margin: 24px 0; text-align: center; }
+  .fig-cap { font-size: 13px; color: #5F5E5A; margin-top: 10px; }
+  @media print { body { padding: 0; font-size: 12pt; } h2 { page-break-after: avoid; } }
+</style>
+</head>
+<body>
+
+<h1>全图 + 分块双通道混合推理方案说明</h1>
+<div class="sub">微藻显微图像识别与计数任务 · 推理阶段策略</div>
+
+<h2>一、要解决的问题</h2>
+<p>计数腔室显微图像分辨率为 <strong>1224 × 1024</strong> 像素，而单个微藻个体直径仅十余至数十像素。YOLO 系列模型在推理时会将输入统一缩放（letterbox）到固定尺寸 <code>imgsz</code>。本项目训练阶段 <code>imgsz</code> 为 896 / 1024，推理阶段降为 640，由此产生两个问题：</p>
+<ol>
+  <li><strong>尺度压缩导致细节丢失。</strong>整图直接送入模型时，等效缩放系数约为 640 / 1224 ≈ 0.52，微藻直径被压缩到原来的一半左右，边缘与纹理信息在重采样中损失。</li>
+  <li><strong>训练—推理尺度失配。</strong>训练见到的目标尺度与推理时不一致，密集样本下表现为漏检和相邻个体粘连。</li>
+</ol>
+
+<h2>二、基本思路：以分块换取等效放大</h2>
+<p>不对整幅图做缩放，而是把原图切分为若干<strong>保持原分辨率</strong>的子块（tile），每个子块单独缩放至 <code>imgsz</code> 后送入模型。子块尺寸越小，模型输入中目标的等效放大倍率越高。</p>
+
+<table>
+  <tr><th>通道</th><th>送入模型的区域</th><th>有效尺度</th><th>相对全图通道放大倍率</th></tr>
+  <tr><td>全图通道</td><td class="num">1224 × 1024（整图）</td><td class="num">0.52×</td><td class="num">1.00×（基准）</td></tr>
+  <tr><td>分块 1024</td><td class="num">1024 × 1024 子块</td><td class="num">0.625×</td><td class="num">1.20×</td></tr>
+  <tr><td>分块 512</td><td class="num">512 × 512 子块</td><td class="num">1.25×</td><td class="num">2.40×</td></tr>
+</table>
+
+<div class="key">
+<p>有效尺度 = <code>imgsz / max(H, W)</code>。采用 512 分块时，每个微藻在模型输入中的尺寸比全图通道<strong>大 2.4 倍</strong>，这是小目标检出率提升的直接来源。这也解释了为何本项目中将 <code>TILE_SIZE</code> 由 1024 下调至 512——微藻属小目标，小分块检测更准。</p>
+</div>
+
+<h2>三、为什么是"双通道"而不是只做分块</h2>
+<p>分块会引入两个副作用，必须由全图通道补偿：</p>
+<ol>
+  <li><strong>目标被切碎。</strong>跨越分块边界的个体（较大的个体或成团聚集）在任一子块内都只呈现局部形态，模型难以识别。全图通道保留全局上下文，能够完整捕获这类大目标。</li>
+  <li><strong>分块可能整体失败。</strong>显存溢出（CUDA OOM）或个别子块推理异常时，分块通道可能返回空结果；全图通道提供兜底，保证输出不会全空。</li>
+</ol>
+<p>反之，全图通道漏检的小目标由分块通道补齐。二者为互补关系，最终结果取并集，而非二选一。</p>
+
+<h2>四、完整流程</h2>
+
+<div class="fig">
+<svg viewBox="0 0 680 424" width="100%" role="img" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<g><rect x="210" y="40" width="260" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text x="340" y="58" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#2C2C2A">原始显微图像</text>
+<text x="340" y="76" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="12" fill="#5F5E5A">1224 × 1024</text></g>
+<g><rect x="55" y="140" width="250" height="56" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="180" y="158" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#0C447C">全图通道 full pass</text>
+<text x="180" y="176" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="12" fill="#185FA5">整图缩放至 640，尺度 0.52×</text></g>
+<g><rect x="375" y="140" width="250" height="56" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text x="500" y="158" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#085041">分块通道 tile pass</text>
+<text x="500" y="176" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="12" fill="#0F6E56">512×512 子图，尺度 1.25×</text></g>
+<g><rect x="190" y="244" width="300" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text x="340" y="262" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#2C2C2A">合并去重</text>
+<text x="340" y="280" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="12" fill="#5F5E5A">掩码 IoU ≥ 0.60 迭代合并</text></g>
+<g><rect x="190" y="348" width="300" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text x="340" y="366" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#2C2C2A">输出实例集合</text>
+<text x="340" y="384" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="12" fill="#5F5E5A">掩码 + 类别 + 置信度</text></g>
+<path d="M340 96 V 118 H 180 V 138" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M340 96 V 118 H 500 V 138" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M180 196 V 220 H 340 V 242" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M500 196 V 220 H 340 V 242" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M340 300 V 346" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+</svg>
+<div class="fig-cap">图 1　全图 + 分块双通道混合推理流程</div>
+</div>
+
+<h3>步骤 1　图像预处理</h3>
+<p>LAB 色彩空间 CLAHE 对比度增强（clipLimit = 2.5）+ 非锐化掩蔽（USM）锐化，用于强化微藻边缘与低对比度个体的可辨识度。</p>
+
+<h3>步骤 2　全图通道（full pass）</h3>
+<p>整幅预处理图像直接送入模型，<code>imgsz = 640</code>、<code>max_det = 700</code>、<code>conf = 0.20</code>、<code>iou = 0.45</code>，得到实例集合 <strong>A</strong>。</p>
+
+<h3>步骤 3　分块通道（tile pass）</h3>
+<ul>
+  <li><strong>滑窗切分。</strong>步长 <code>step = tile_size − overlap</code>。以 512 / 192 配置为例，1224 × 1024 原图在 x 方向取起点 {0, 320, 640, 712}，y 方向取 {0, 320, 512}，共 <strong>4 × 3 = 12</strong> 个子块；末尾强制补一个贴边窗口，确保右边缘与下边缘区域不被遗漏。</li>
+  <li><strong>逐块预测。</strong>每个子块单独推理，<code>imgsz = 640</code>、<code>max_det = 500</code>。</li>
+  <li><strong>坐标回映射。</strong>将每个子块检出的掩码与包围盒加上偏移 <code>(offset_x, offset_y)</code>，还原至原图坐标系。</li>
+</ul>
+<p>汇总得到实例集合 <strong>B</strong>。</p>
+
+<h3>步骤 4　合并去重</h3>
+<p>对 A ∪ B 执行迭代式凝聚合并（详见第五节）。</p>
+
+<h3>步骤 5　后处理</h3>
+<p>依次执行：包含关系过滤（去除被大掩码完全包住的小掩码）→ 计数腔室空间区域约束 → 掩码形态精修 → 微小实例过滤（掩码面积 &lt; 10 px）。</p>
+
+<h2>五、合并去重算法（本方案关键）</h2>
+<p>分块的重叠区域会使同一个微藻被相邻子块各检出一次，若不合并即造成重复计数。此处未采用常规的包围盒 NMS，而使用<strong>掩码级</strong>合并：</p>
+<ol>
+  <li>按置信度从高到低排序，取最高者作为合并基准；</li>
+  <li>先用包围盒 IoU 快速预筛（为 0 则直接跳过，避免无谓的掩码运算），再在并集包围盒内计算<strong>掩码级 mask-IoU</strong>；</li>
+  <li>mask-IoU ≥ 阈值（本项目 0.60）即合并：包围盒取并集、掩码取逻辑或、置信度取算术平均；</li>
+  <li>每次合并后重置扫描索引，支持链式合并（A–B、B–C 相继并入同一实例）；</li>
+  <li>类别无关（class-agnostic），避免同一类个体因类别预测抖动被拆分。</li>
+</ol>
+
+<div class="key">
+<p><strong>为何用掩码 IoU 而非包围盒 IoU。</strong>微藻形态不规则且在密集区相互毗邻，此时包围盒重叠率很高但掩码本身并不重合。若以包围盒 IoU 判据合并，会把相邻的不同个体错误合并为一个；掩码 IoU 才能准确判断"是否为同一个体"。这是本方案针对实例分割任务做的关键适配。</p>
+</div>
+
+<h2>六、工程鲁棒性设计</h2>
+<ul>
+  <li><strong>三级参数降级。</strong>GPU imgsz 640 → GPU imgsz 512 → CPU imgsz 640，任一步失败自动切换下一级。</li>
+  <li><strong>显存溢出处理。</strong>捕获 CUDA OOM 后清空显存缓存并转 CPU 分块；CPU 模式下分块自动收缩为 512 / 128 以降低开销。</li>
+  <li><strong>CPU 兜底重跑。</strong>分块通道结果为空且曾发生 OOM 时，以 CPU 模式重新执行分块推理。</li>
+  <li><strong>合并失败保护。</strong>两通道均无检出时抛出明确异常，而非静默返回空计数。</li>
+</ul>
+
+<h2>七、与通用方案 SAHI 的关系</h2>
+<p>SAHI（Slicing Aided Hyper Inference）是社区通用的切片推理库。本项目<strong>未引入该依赖</strong>，而是实现了等价的自研方案。原因在于本任务需要在标准切片流程之外接入专属环节：掩码级合并（而非常规框级 NMS）、计数腔室空间约束、掩码形态精修、贴边窗口补齐。核心思想与 SAHI 一致，实现针对微藻计数任务做了定制。</p>
+
+<h2>八、需要说明的两点</h2>
+<div class="note">
+<p><strong>1. 分块配置不可混用。</strong>项目内并存两套配置：1024 / 256（有效放大 1.20×）与 512 / 192（有效放大 2.40×）。两者检出的目标尺度差异显著，<strong>计数结果不具备直接可比性</strong>。任何横向对比实验必须固定同一配置。</p>
+<p><strong>2. 合并步骤存在性能瓶颈。</strong>当前合并为朴素两两比较，复杂度 O(n²)，且在每次合并后重置扫描索引。在数千实例的极密集图像上耗时明显。若后续需提速，可按空间网格分桶，仅在相邻桶内做 IoU 比较。</p>
+</div>
+
+</body>
+</html>

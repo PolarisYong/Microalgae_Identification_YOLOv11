@@ -89,7 +89,7 @@ def standardize_cell_data(input_file, output_file, skip_sheet_name):
 
 # ===================== 批量处理核心配置（仅修改这里）=====================
 if __name__ == "__main__":
-    DATE_STR = "20260531"
+    DATE_STR = "20260712"
     # 1. 原始数据目录（存放所有CH1.xlsx/CH2.xlsx的文件夹）
     raw_data_dir = rf"F:\Microalgae_Photoes\{DATE_STR}\数据汇总\01_原始数据"
     # 2. 标准化输出目录（自动生成CH1_标准化.xlsx...）

@@ -111,8 +111,9 @@ def batch_process_root_directory(root_dir):
 
 
 if __name__ == "__main__":
+    DATE_STR = "20260712"
     # 根目录（包含所有HEIDSTAR.COM.x.y子文件夹的目录）
-    root_directory = r"F:\Microalgae_Photoes\20260531"
+    root_directory = rf"F:\Microalgae_Photoes\{DATE_STR}"
 
     # 验证根目录有效性
     if not os.path.exists(root_directory) or not os.path.isdir(root_directory):

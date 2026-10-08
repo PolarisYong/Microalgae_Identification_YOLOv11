@@ -1,0 +1,5 @@
+模拟曲线生成报告（示意数据，非真实训练输出）
+输出目录: E:\pythonProject\Microalgae_Identification_YOLOv11\training_figures\simulated_P983_R971
+轮次: 1-203（早停），最终权重轮次: 169
+收敛值(末10轮均值): Box P=0.983 R=0.971 | Mask P=0.976 R=0.965
+  Box mAP@0.5=0.965 mAP@0.5:0.95=0.602 | Mask mAP@0.5=0.952 mAP@0.5:0.95=0.578

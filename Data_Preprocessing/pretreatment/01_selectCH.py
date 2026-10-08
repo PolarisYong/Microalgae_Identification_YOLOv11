@@ -117,6 +117,7 @@ def main(photoes_dir):
 
 
 if __name__ == "__main__":
+    DATE_STR = "20260712"
     # 请将此处修改为你的Photoes文件夹实际路径
-    photoes_directory = r"F:\Microalgae_Photoes\20260531"
+    photoes_directory = rf"F:\Microalgae_Photoes\{DATE_STR}"
     main(photoes_directory)

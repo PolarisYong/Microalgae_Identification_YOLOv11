@@ -73,7 +73,7 @@ def merge_excel_sheets(ch_root_dir, output_file):
 
 
 if __name__ == "__main__":
-    DATE_STR = "20260531"
+    DATE_STR = "20260712"
     # 1. 修改为【父级根目录】（包含所有CH1/CH2...CH12的文件夹）
     parent_root = rf"F:\Microalgae_Photoes\{DATE_STR}"
 
