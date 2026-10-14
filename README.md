@@ -76,8 +76,50 @@ conda activate lpr_dp
 pip install -r requirements-data-analysis.txt
 ```
 
+### 2.1 Ubuntu 22.04 全新部署（conda）
+
+> 完整版（SSH 密钥配置、conda 初始化、排错表、Windows 路径残留清单）见
+> [`docs/ubuntu_setup.md`](docs/ubuntu_setup.md)。
+
+```bash
+# ① 系统依赖：OpenCV 运行库 + 中文字体 + 编译工具
+sudo apt update
+sudo apt install -y build-essential git wget \
+     libgl1 libglib2.0-0 libsm6 libxext6 libxrender1 \
+     fonts-wqy-zenhei fonts-noto-cjk
+
+# ② Miniconda（装完执行 conda init，重开终端生效）
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh -b -p "$HOME/miniconda3"
+"$HOME/miniconda3/bin/conda" init bash
+exec bash
+
+# ③ 克隆（完整历史约 1.5 GB；只想跑流程用 --depth 1，约 240 MB）
+git clone git@github.com:PolarisYong/Microalgae_Identification_YOLOv11.git
+# git clone --depth 1 git@github.com:PolarisYong/Microalgae_Identification_YOLOv11.git
+cd Microalgae_Identification_YOLOv11
+
+# ④ 识别环境
+conda create -n microalgae python=3.11 pip -y
+conda activate microalgae
+pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu126
+
+# ⑤ 校验
+python -c "import torch, ultralytics; print(torch.__version__, torch.cuda.is_available())"
+```
+
+几个必须注意的点：
+
+- **`--extra-index-url` 不能省。** `torch==2.7.1+cu126`、`torchvision==0.22.1+cu126` 是 CUDA 12.6 专用轮子，PyPI 上没有，必须走 PyTorch 官方索引，否则 pip 报 `No matching distribution found`。
+- **不需要在系统里另装 CUDA Toolkit。** cu126 的 CUDA 运行库随 pip 包一起安装，只要 NVIDIA 驱动 ≥ 525 即可（`nvidia-smi` 确认）。
+- **默认权重已入库。** `runs/segment/train4/weights/best.pt`（约 22 MB）随仓库一起克隆，无需另外下载。
+- **没有 GPU 也能跑**（自动回退 CPU），但全图 + 分块双通道推理会很慢。
+- **克隆体积偏大**是因为历史提交里曾放进过大数据集产物；只要最新代码用 `--depth 1` 即可，代价是看不到提交历史。
+- 数据分析环境可选单独建：`conda create -n lpr_dp python=3.11 pip -y && conda activate lpr_dp && pip install -r requirements-data-analysis.txt`。
+
 > 字体：`detect_batch.py` 的标注文字优先使用文泉驿正黑 / PingFang / DejaVuSans，
 > 全部缺失时回退到 PIL 默认字体（不影响识别数量与面积，仅影响叠加图上的中文显示）。
+> Ubuntu 上装 `fonts-wqy-zenhei` 即可命中第一种。
 
 ---
 
