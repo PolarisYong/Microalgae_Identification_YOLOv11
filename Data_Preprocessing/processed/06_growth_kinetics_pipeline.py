@@ -6,8 +6,8 @@ fits, robust chamber selection, channel aggregation, and chamber bootstrap.
 
 Example:
     python growth_kinetics_pipeline.py \
-        --input-dir "F:\\Microalgae_Photoes\\Archive\\20260504\\数据汇总\\02_标准化数据" \
-        --output-dir "F:\\Microalgae_Photoes\\Archive\\20260504\\数据汇总\\03_生长动力学" \
+        --input-dir "/home/smart/github_projects/materials/Archive/20260504/数据汇总/02_标准化数据" \
+        --output-dir "/home/smart/github_projects/materials/Archive/20260504/数据汇总/03_生长动力学" \
         --time-step 1 --start-time 0 --bootstrap 500
 
 本脚本旨在对标准化的微藻生长数据工作簿进行批量生长动力学分析。它保持源工作簿不变，并为每个输入文件生成一个独立的分析结果工作簿。
@@ -48,8 +48,8 @@ DATE_STR = "20260726"
 VALID_HOURS = "96"
 
 # 1. 输入和输出文件夹。修改 DATE_STR 后，下面两个路径会自动更新。
-INPUT_FOLDER = rf"F:\Microalgae_Photoes\Test\{DATE_STR}\数据汇总\02_标准化数据"
-OUTPUT_FOLDER = rf"F:\Microalgae_Photoes\Test\{DATE_STR}\数据汇总\04_生长动力学结果\{VALID_HOURS}小时"
+INPUT_FOLDER = rf"/home/smart/github_projects/materials/Test/{DATE_STR}/数据汇总/02_标准化数据"
+OUTPUT_FOLDER = rf"/home/smart/github_projects/materials/Test/{DATE_STR}/数据汇总/04_生长动力学结果/{VALID_HOURS}小时"
 
 # 2. 文件和时间设置。
 SKIP_SHEET = {"数据汇总"}
@@ -636,7 +636,9 @@ def create_summary_fit_chart(
         np.isfinite(aggregate[y_column]) & (aggregate[y_column] > 0)
     ].copy()
 
-    plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "Arial Unicode MS", "DejaVu Sans"]
+    # Linux 中文字体（原 Windows 写法为 Microsoft YaHei / SimHei / Arial Unicode MS）
+    # 注：Noto Sans CJK SC 在本机以 .ttc 集合形式提供，matplotlib 只注册了其 JP face，故用文泉驿正黑打头
+    plt.rcParams["font.sans-serif"] = ["WenQuanYi Zen Hei", "Noto Sans CJK JP", "Droid Sans Fallback", "DejaVu Sans"]
     plt.rcParams["axes.unicode_minus"] = False
     fig, ax = plt.subplots(figsize=(11, 6.5))
     ax.scatter(

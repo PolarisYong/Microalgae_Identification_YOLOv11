@@ -29,9 +29,14 @@ def organize_images(source_dir, target_parent, channel_num):
             source_num = match.group(1).lstrip('0') or '0'
             print(f"\n处理文件夹: {folder} (编号: {source_num})")
 
-            # 检查image子文件夹
-            image_dir = os.path.join(folder_path, "images")
-            if not os.path.exists(image_dir) or not os.path.isdir(image_dir):
+            # 检查image子文件夹（Linux 区分大小写，Images/images 两种写法都兼容）
+            image_dir = None
+            for name in ("Images", "images"):
+                candidate = os.path.join(folder_path, name)
+                if os.path.isdir(candidate):
+                    image_dir = candidate
+                    break
+            if image_dir is None:
                 print(f"警告: {folder}中未找到images文件夹，已跳过")
                 continue
 
@@ -68,7 +73,7 @@ def batch_process_root_directory(root_dir):
     批处理根目录下的所有HEIDSTAR.COM.x.y格式子文件夹
 
     参数:
-        root_dir: 根目录（F:\Microalgae_Photoes\20260609）
+        root_dir: 根目录（/home/smart/github_projects/materials/20260609）
     """
     # 正则匹配HEIDSTAR.COM.x.y格式的文件夹名，提取x和y
     folder_name_pattern = r'HEIDSTAR\.COM\.(\d+)\.(\d+)$'
@@ -111,9 +116,10 @@ def batch_process_root_directory(root_dir):
 
 
 if __name__ == "__main__":
-    DATE_STR = "20260712"
+    DATE_STR = "20261001"
     # 根目录（包含所有HEIDSTAR.COM.x.y子文件夹的目录）
-    root_directory = rf"F:\Microalgae_Photoes\{DATE_STR}"
+    # Linux 数据根目录（原 Windows: F:\Microalgae_Photoes）
+    root_directory = rf"/home/smart/github_projects/photoes/{DATE_STR}"
 
     # 验证根目录有效性
     if not os.path.exists(root_directory) or not os.path.isdir(root_directory):

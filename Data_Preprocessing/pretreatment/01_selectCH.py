@@ -117,7 +117,7 @@ def main(photoes_dir):
 
 
 if __name__ == "__main__":
-    DATE_STR = "20260712"
-    # 请将此处修改为你的Photoes文件夹实际路径
-    photoes_directory = rf"F:\Microalgae_Photoes\{DATE_STR}"
+    DATE_STR = "20261001"
+    # Linux 数据根目录（原 Windows: F:\Microalgae_Photoes）
+    photoes_directory = rf"/home/smart/github_projects/photoes/{DATE_STR}"
     main(photoes_directory)

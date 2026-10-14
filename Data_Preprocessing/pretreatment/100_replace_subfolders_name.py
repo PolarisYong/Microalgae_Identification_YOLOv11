@@ -44,7 +44,7 @@ def rename_folders(target_dir):
 
 if __name__ == "__main__":
     # ========== 请在这里修改为你的目标文件夹路径 ==========
-    TARGET_FOLDER = r"F:\Microalgae_Photoes\20260520\2026-Week-22"
+    TARGET_FOLDER = r"/home/smart/github_projects/materials/20260520/2026-Week-22"
     # ======================================================
 
     rename_folders(TARGET_FOLDER)

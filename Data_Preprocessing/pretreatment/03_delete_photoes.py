@@ -69,5 +69,5 @@ def main(root_dir):
 
 
 if __name__ == "__main__":
-    root_dir = r"F:\Microalgae_Photoes\20251104\CH5"
+    root_dir = r"/home/smart/github_projects/materials/20251104/CH5"
     main(root_dir)
