@@ -13,23 +13,24 @@ from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
 from ultralytics import YOLO
 
-MODEL_PATH = r"E:\pythonProject\Microalgae_Identification_YOLOv11\runs\segment\train4\weights\best.pt"
+MODEL_PATH = "/home/smart/github_projects/Microalgae_Identification_YOLOv11/runs/segment/train3/weights/best.pt"
 
-DATE_STR = "20260712"
+DATE_STR = "20260719"
+# Linux 数据根目录（原 Windows 路径为 F:\Microalgae_Photoes）
 # Update this list if needed.
 ROOT_FOLDERS = [
-    # rf"F:\Microalgae_Photoes\{DATE_STR}\CH1",
-    # rf"F:\Microalgae_Photoes\{DATE_STR}\CH2",
-    # rf"F:\Microalgae_Photoes\{DATE_STR}\CH3",
-    # rf"F:\Microalgae_Photoes\{DATE_STR}\CH4",
-    # rf"F:\Microalgae_Photoes\{DATE_STR}\CH5",
-    # rf"F:\Microalgae_Photoes\{DATE_STR}\CH6",
-    # rf"F:\Microalgae_Photoes\{DATE_STR}\CH7",
-    # rf"F:\Microalgae_Photoes\{DATE_STR}\CH8",
-    # rf"F:\Microalgae_Photoes\{DATE_STR}\CH9",
-    # rf"F:\Microalgae_Photoes\{DATE_STR}\CH10",
-    rf"F:\Microalgae_Photoes\{DATE_STR}\CH11",
-    rf"F:\Microalgae_Photoes\{DATE_STR}\CH12",
+    f"/home/smart/github_projects/materials/{DATE_STR}/CH1",
+    f"/home/smart/github_projects/materials/{DATE_STR}/CH2",
+    f"/home/smart/github_projects/materials/{DATE_STR}/CH3",
+    f"/home/smart/github_projects/materials/{DATE_STR}/CH4",
+    f"/home/smart/github_projects/materials/{DATE_STR}/CH5",
+    f"/home/smart/github_projects/materials/{DATE_STR}/CH6",
+    f"/home/smart/github_projects/materials/{DATE_STR}/CH7",
+    f"/home/smart/github_projects/materials/{DATE_STR}/CH8",
+    f"/home/smart/github_projects/materials/{DATE_STR}/CH9",
+    f"/home/smart/github_projects/materials/{DATE_STR}/CH10",
+    f"/home/smart/github_projects/materials/{DATE_STR}/CH11",
+    f"/home/smart/github_projects/materials/{DATE_STR}/CH12",
 ]
 
 ACTUAL_WIDTH_UM = 44.3
@@ -218,9 +219,11 @@ def cv2_img_add_text(img, text, position, text_color=(0, 255, 0), text_size=0.6,
 
 def load_cjk_font(font_size):
     font_paths = [
-        r"C:\Windows\Fonts\msyh.ttc",
-        r"C:\Windows\Fonts\simhei.ttf",
+        # 删掉下面两行Windows路径
+        # r"C:\Windows\Fonts\msyh.ttc",
+        # r"C:\Windows\Fonts\simhei.ttf",
         "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+        # Mac路径保留不影响Ubuntu
         "/System/Library/Fonts/PingFang.ttc",
     ]
     for font_path in font_paths:
@@ -231,12 +234,14 @@ def load_cjk_font(font_size):
     return ImageFont.load_default()
 
 
+
 def load_symbol_font(font_size):
     font_paths = [
-        r"C:\Windows\Fonts\segoeui.ttf",
-        r"C:\Windows\Fonts\arial.ttf",
-        r"C:\Windows\Fonts\arialuni.ttf",
-        r"C:\Windows\Fonts\seguisym.ttf",
+        # 全部删除下面Windows路径
+        # r"C:\Windows\Fonts\segoeui.ttf",
+        # r"C:\Windows\Fonts\arial.ttf",
+        # r"C:\Windows\Fonts\arialuni.ttf",
+        # r"C:\Windows\Fonts\seguisym.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
     ]
     for font_path in font_paths:

@@ -3,8 +3,8 @@ import re
 import os
 
 # ================== 用户直接修改这里 ==================
-input_path = r"F:\Microalgae_Photoes\Archive\all_data.xlsx"  # 输入文件路径（原文件）
-output_path = r"F:\Microalgae_Photoes\Archive\all_data_3data.xlsx"  # 输出文件路径（新文件）
+input_path = r"/home/smart/github_projects/materials/Archive/all_data.xlsx"  # 输入文件路径（原文件）
+output_path = r"/home/smart/github_projects/materials/Archive/all_data_3data.xlsx"  # 输出文件路径（新文件）
 
 
 # ==================================================

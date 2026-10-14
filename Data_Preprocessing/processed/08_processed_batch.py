@@ -572,7 +572,7 @@ def _fit_and_write_individual_sheet(
     ax.set_title(f"{plt_name} Cell growth curve fitting")
     _style_time_axis(ax)
     param_text = (
-        f"$\\it{{μ}}_{{\\mathrm{{max}}}}$= {round(fit_result['mu_max'], 4)} h⁻¹\n"
+        f"$\\it{{μ}}_{{\\mathrm{{max}}}}$= {round(fit_result['mu_max'], 4)} h$^{{-1}}$\n"
         f"$K_{{rel}}$ = {round(fit_result['K'], 2)} (dimensionless)\n"
         f"$N_{{rel,fit}}(0)$ = {round(fit_result['N0'], 2)}\n"
         f"$\\it{{λ}}$ = {round(fit_result['lambda_'], 2)}\n"
@@ -1049,7 +1049,7 @@ def process_cell_growth(
                 )
                 _style_time_axis(ax)
                 param_text = (
-                    f"$\\it{{μ}}_{{\\mathrm{{max}}}}$ = {merged_params['mu_max']:.4f} h⁻¹\n"
+                    f"$\\it{{μ}}_{{\\mathrm{{max}}}}$ = {merged_params['mu_max']:.4f} h$^{{-1}}$\n"
                     f"$K_{{rel}}$ = {merged_params['K']:.2f} (dimensionless)\n"
                     f"$N_{{rel,fit}}(0)$ = {merged_params['N0']:.2f}\n"
                     f"$\\it{{λ}}$ = {merged_params['lambda_']:.2f}\n"
@@ -1196,7 +1196,7 @@ def process_cell_growth(
                 ax.set_title(f"{plt_name} data vs merged fitting curve")
                 _style_time_axis(ax)
                 param_text = (
-                    f"$\\it{{μ}}_{{\\mathrm{{max}}}}$ = {merged_params['mu_max']:.4f} h⁻¹\n"
+                    f"$\\it{{μ}}_{{\\mathrm{{max}}}}$ = {merged_params['mu_max']:.4f} h$^{{-1}}$\n"
                     f"$K_{{rel}}$ = {merged_params['K']:.2f} (dimensionless)\n"
                     f"$N_{{rel,fit}}(0)$ = {merged_params['N0']:.2f}\n"
                     f"$\\it{{λ}}$ = {merged_params['lambda_']:.2f}\n"
@@ -1362,12 +1362,12 @@ def process_cell_growth(
 7. 最后进行最多 2 轮一对一交换修复。
 """
 # ================================== 【配置区：所有可修改参数都在这里】 ==================================
-DATE_STR = "20260726"
+DATE_STR = "20261001"
 VALID_HOURS = "96"
 # 1. 原始标准化Excel所在的输入文件夹（路径中的日期自动引用上面的变量）
-INPUT_FOLDER = rf"F:\Microalgae_Photoes\0828_μmax_revision\{DATE_STR}\数据汇总\02_标准化数据"
+INPUT_FOLDER = rf"/home/smart/github_projects/photoes/{DATE_STR}/数据汇总/02_标准化数据"
 # 2. 可视化结果Excel的保存文件夹
-OUTPUT_FOLDER = rf"F:\Microalgae_Photoes\0828_μmax_revision\{DATE_STR}\数据汇总\03_可视化结果\{VALID_HOURS}小时"
+OUTPUT_FOLDER = rf"/home/smart/github_projects/photoes/{DATE_STR}/数据汇总/03_可视化结果/{VALID_HOURS}小时"
 # 3. 所有Excel共用的全局参数（和原代码参数含义完全一致）
 SKIP_SHEET = {"数据汇总"}              # 需要跳过的工作表名称
 SET_VALID_NUM = int(VALID_HOURS) + 1 # 有效数量阈值
@@ -1384,20 +1384,37 @@ PROCESSING_RESULT_SUFFIX = rf"_可视化结果_{VALID_HOURS}.xlsx"
 
 # 0726
 PARAM_MAPPING = {
-    1: "L30‑N160‑IC5.25%",    # CH7_标准化.xlsx
-    2: "L30‑N160‑IC5.25%",      # CH8_标准化.xlsx
-    3: "L30‑N20‑IC10%",        # CH9_标准化.xlsx
-    4: "L30‑N20‑IC0.5%",  # CH7_标准化.xlsx
-    5: "L30‑N20‑IC0.5%",  # CH8_标准化.xlsx
-    6: "L30‑N20‑IC0.5%",  # CH9_标准化.xlsx
-    7: "L30‑N20‑IC10%",  # CH10_标准化.xlsx
-    8: "L30‑N300‑IC0.5%",  # CH10_标准化.xlsx
-    9: "L30‑N300‑IC0.5%",  # CH9_标准化.xlsx
-    10: "L30‑N300‑IC10%",  # CH10_标准化.xlsx
-    11: "L30‑N300‑IC10%",  # CH10_标准化.xlsx
-    12: "L30‑N300‑IC10%",  # CH10_标准化.xlsx
+    1: "N287",    # CH7_标准化.xlsx
+    2: "N325",      # CH8_标准化.xlsx
+    3: "N400",        # CH9_标准化.xlsx
+    4: "N450",  # CH7_标准化.xlsx
+    5: "N500",  # CH8_标准化.xlsx
+    6: "N550",  # CH9_标准化.xlsx
+    7: "N600",  # CH10_标准化.xlsx
+    8: "N700",  # CH10_标准化.xlsx
+    9: "N800",  # CH9_标准化.xlsx
+    10: "N900",  # CH10_标准化.xlsx
+    11: "N600",  # CH10_标准化.xlsx
+    12: "N325",  # CH10_标准化.xlsx
     # 继续添加你所有的CH编号和对应参数字符串
 }
+
+# # 0726
+# PARAM_MAPPING = {
+#     1: "L30‑N160‑IC5.25%",    # CH7_标准化.xlsx
+#     2: "L30‑N160‑IC5.25%",      # CH8_标准化.xlsx
+#     3: "L30‑N20‑IC10%",        # CH9_标准化.xlsx
+#     4: "L30‑N20‑IC0.5%",  # CH7_标准化.xlsx
+#     5: "L30‑N20‑IC0.5%",  # CH8_标准化.xlsx
+#     6: "L30‑N20‑IC0.5%",  # CH9_标准化.xlsx
+#     7: "L30‑N20‑IC10%",  # CH10_标准化.xlsx
+#     8: "L30‑N300‑IC0.5%",  # CH10_标准化.xlsx
+#     9: "L30‑N300‑IC0.5%",  # CH9_标准化.xlsx
+#     10: "L30‑N300‑IC10%",  # CH10_标准化.xlsx
+#     11: "L30‑N300‑IC10%",  # CH10_标准化.xlsx
+#     12: "L30‑N300‑IC10%",  # CH10_标准化.xlsx
+#     # 继续添加你所有的CH编号和对应参数字符串
+# }
 
 # # 0719
 # PARAM_MAPPING = {

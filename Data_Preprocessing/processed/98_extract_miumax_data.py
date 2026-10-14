@@ -94,10 +94,10 @@ def extract_umax_from_folder(root_path, output_path):
 # ================= 运行配置区 =================
 if __name__ == "__main__":
     # 👉 请在这里修改你的【源数据根目录】路径
-    ROOT_FOLDER = r"F:\Microalgae_Photoes\Archive"
+    ROOT_FOLDER = r"/home/smart/github_projects/materials/Archive"
 
     # 👉 请在这里修改你的【输出文件】完整路径
-    OUTPUT_FILE = r"F:\Microalgae_Photoes\Archive\all_data.xlsx"
+    OUTPUT_FILE = r"/home/smart/github_projects/materials/Archive/all_data.xlsx"
 
     # 执行提取函数
     extract_umax_from_folder(ROOT_FOLDER, OUTPUT_FILE)

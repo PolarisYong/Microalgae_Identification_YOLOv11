@@ -542,7 +542,7 @@ def _fit_and_write_individual_sheet(
     ax.set_title(f"{plt_name} Cell growth curve fitting")
     _style_time_axis(ax)
     param_text = (
-        f"$\\it{{μ}}_{{\\mathrm{{max}}}}$= {round(fit_result['mu_max'], 4)} h⁻¹\n"
+        f"$\\it{{μ}}_{{\\mathrm{{max}}}}$= {round(fit_result['mu_max'], 4)} h$^{{-1}}$\n"
         f"$\\it{{K}}$ = {round(fit_result['K'], 2)}\n"
         f"$\\it{{N}}_{{0}}$ = {round(fit_result['N0'], 2)}\n"
         f"$\\it{{λ}}$ = {round(fit_result['lambda_'], 2)}\n"
@@ -1012,7 +1012,7 @@ def process_cell_growth(
                 )
                 _style_time_axis(ax)
                 param_text = (
-                    f"$\\it{{μ}}_{{\\mathrm{{max}}}}$ = {merged_params['mu_max']:.4f} h⁻¹\n"
+                    f"$\\it{{μ}}_{{\\mathrm{{max}}}}$ = {merged_params['mu_max']:.4f} h$^{{-1}}$\n"
                     f"$\\it{{K}}$ = {merged_params['K']:.2f}\n"
                     f"$\\it{{N}}_{{0}}$ = {merged_params['N0']:.2f}\n"
                     f"$\\it{{λ}}$ = {merged_params['lambda_']:.2f}\n"
@@ -1159,7 +1159,7 @@ def process_cell_growth(
                 ax.set_title(f"{plt_name} data vs merged fitting curve")
                 _style_time_axis(ax)
                 param_text = (
-                    f"$\\it{{μ}}_{{\\mathrm{{max}}}}$ = {merged_params['mu_max']:.4f} h⁻¹\n"
+                    f"$\\it{{μ}}_{{\\mathrm{{max}}}}$ = {merged_params['mu_max']:.4f} h$^{{-1}}$\n"
                     f"$\\it{{K}}$ = {merged_params['K']:.2f}\n"
                     f"$\\it{{N}}_{{0}}$ = {merged_params['N0']:.2f}\n"
                     f"$\\it{{λ}}$ = {merged_params['lambda_']:.2f}\n"
@@ -1328,9 +1328,9 @@ def process_cell_growth(
 DATE_STR = "20260712"
 VALID_HOURS = "96"
 # 1. 原始标准化Excel所在的输入文件夹（路径中的日期自动引用上面的变量）
-INPUT_FOLDER = rf"F:\Microalgae_Photoes\0828_μmax_revision\{DATE_STR}\数据汇总\02_标准化数据"
+INPUT_FOLDER = rf"/home/smart/github_projects/materials/0828_μmax_revision/{DATE_STR}/数据汇总/02_标准化数据"
 # 2. 可视化结果Excel的保存文件夹
-OUTPUT_FOLDER = rf"F:\Microalgae_Photoes\0828_μmax_revision\{DATE_STR}\数据汇总\03_可视化结果\{VALID_HOURS}小时"
+OUTPUT_FOLDER = rf"/home/smart/github_projects/materials/0828_μmax_revision/{DATE_STR}/数据汇总/03_可视化结果/{VALID_HOURS}小时"
 # 3. 所有Excel共用的全局参数（和原代码参数含义完全一致）
 SKIP_SHEET = {"数据汇总"}              # 需要跳过的工作表名称
 SET_VALID_NUM = int(VALID_HOURS) + 1 # 有效数量阈值

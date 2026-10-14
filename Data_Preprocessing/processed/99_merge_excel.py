@@ -42,9 +42,9 @@ def merge_excel_files(folder_path, output_file):
 
 if __name__ == "__main__":
     # 文件夹路径（当前目录下的document文件夹）
-    folder_path = r"F:\Microalgae_Photoes\summary\L100_20"
+    folder_path = r"/home/smart/github_projects/materials/summary/L100_20"
     # 输出文件路径
-    output_file = r"F:\Microalgae_Photoes\summary\L100_20\summary.xlsx"
+    output_file = r"/home/smart/github_projects/materials/summary/L100_20/summary.xlsx"
 
     # 检查文件夹是否存在
     if not os.path.exists(folder_path):
