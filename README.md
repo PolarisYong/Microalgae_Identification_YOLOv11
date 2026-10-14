@@ -33,11 +33,11 @@ conda create -n microalgae python=3.11 pip -y && conda activate microalgae
 pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu126
 
 # ⑤ 配置批次（默认 photo_root 是旧服务器路径，必须改）
-cp configs/pipeline.example.yaml configs/batch_20261001.yaml
-python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml --dry-run
+cp configs/batch.example.yaml configs/batch.yaml
+python microalgae_identification/run_pipeline.py --dry-run
 
 # ⑥ 跑
-python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml
+python microalgae_identification/run_pipeline.py
 ```
 
 三点必须注意：
@@ -59,8 +59,8 @@ python microalgae_identification/run_pipeline.py --config configs/batch_20261001
 ```
 Microalgae_Identification_YOLOv11/
 ├── configs/                              ★ 批次配置（换数据只改这里）
-│   ├── pipeline.example.yaml                 配置模板与字段说明
-│   └── batch_20261001.yaml                   20261001 批次实例
+│   ├── batch.example.yaml                 配置模板与字段说明
+│   └── batch.yaml                         当前批次配置（文件名固定，不含日期）
 │
 ├── microalgae_identification/            ★ 模块一：微藻识别
 │   ├── config.py                             配置加载（YAML → 环境变量 → 命令行）
@@ -161,8 +161,13 @@ CH{z}/IMG001xNNN/results/CH{z}_CB{c}.xlsx    （含「汇总统计」页：图�
 **第 1 步：写批次配置。** 复制模板并填写日期、数据根目录、流道与工况映射：
 
 ```bash
-cp configs/pipeline.example.yaml configs/batch_20261001.yaml
+cp configs/batch.example.yaml configs/batch.yaml
 ```
+
+> **文件名固定叫 `batch.yaml`，不含日期。** 日期只是文件里的 `batch.date` 字段 ——
+> 换批次时改这个字段（或用 `--date` 覆盖）即可，**不需要复制新文件、不需要改文件名**。
+> 每次改完提交一次 git，`git log configs/batch.yaml` 就是各批次配置的留档。
+> 想同时保留多份，用 `--config` 指向任意路径，例如 `configs/batches/20261015.yaml`。
 
 ```yaml
 batch:
@@ -184,38 +189,44 @@ summary:
 **第 2 步：一键执行。**
 
 ```bash
-python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml
+python microalgae_identification/run_pipeline.py
 ```
 
 常用变体：
 
 ```bash
 # 先检查配置解析出的路径是否正确，不实际执行
-python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml --dry-run
+python microalgae_identification/run_pipeline.py --dry-run
 
 # 图片已手工分拣好，跳过前两步
-python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml --from detect
+python microalgae_identification/run_pipeline.py --from detect
 
 # 只重跑汇总（例如识别结果有更新）
-python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml --only merge
+python microalgae_identification/run_pipeline.py --only merge
 
-# 临时换批次，不写配置文件
+# 换批次：只改日期，配置文件不用动
 python microalgae_identification/run_pipeline.py --date 20261015 --hours 96 --channels 1-12
+
+# 指定其它配置文件（例如按批次留档的多份配置）
+python microalgae_identification/run_pipeline.py --config configs/batches/20261015.yaml
 ```
 
 失败即中断，修复后可用 `--from <阶段>` 续跑。阶段名：`sort` `move` `detect` `merge` `standardize` `visualize`。
+
+> `configs/batch.yaml` 存在时会被**自动加载**，所以上面的命令都不需要写 `--config`。
+> 优先级：命令行 > `configs/batch.yaml` > 内置默认值。
 
 ### 3.3 单独运行某一步
 
 每个脚本都可独立运行，并共享同一套配置参数：
 
 ```bash
-python microalgae_identification/preprocessing/01_select_ch.py   --config configs/batch_20261001.yaml
-python microalgae_identification/preprocessing/02_move_photoes.py --config configs/batch_20261001.yaml
-python microalgae_identification/detection/detect_batch.py       --config configs/batch_20261001.yaml
-python microalgae_identification/postprocessing/00_merge_excel_summary.py             --config configs/batch_20261001.yaml
-python microalgae_identification/postprocessing/01_standardize_relative_cell_number.py --config configs/batch_20261001.yaml
-python microalgae_identification/postprocessing/08_growth_curve_batch.py               --config configs/batch_20261001.yaml
+python microalgae_identification/preprocessing/01_select_ch.py
+python microalgae_identification/preprocessing/02_move_photoes.py
+python microalgae_identification/detection/detect_batch.py
+python microalgae_identification/postprocessing/00_merge_excel_summary.py
+python microalgae_identification/postprocessing/01_standardize_relative_cell_number.py
+python microalgae_identification/postprocessing/08_growth_curve_batch.py
 ```
 
 参数优先级：**命令行 > YAML 配置 > 内置默认值**。内置默认值与重构前脚本中的硬编码逐字一致，
@@ -297,3 +308,4 @@ RSM 模型 / 驻点 / 交互作用图 / 20 组模拟数据
 **某个流道被跳过了？**
 `08_growth_curve_batch.py` 只处理在 `summary.channel_conditions` 中登记过的流道，
 未登记的会打印「未配置对应实验参数」并跳过。
+

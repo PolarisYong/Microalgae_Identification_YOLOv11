@@ -10,13 +10,14 @@
     00_merge_excel_summary.py / 01_standardize_relative_cell_number.py /
     08_growth_curve_batch.py
 
-现在全部收敛到 ``configs/<批次>.yaml``，脚本顶部只读取本模块给出的配置对象。
+现在全部收敛到 ``configs/batch.yaml``（文件名固定，日期只是文件里的一个字段），
+脚本顶部只读取本模块给出的配置对象。
 
 取值优先级（高 → 低）
 --------------------
 1. 命令行参数        ``--config`` ``--date`` ``--photo-root`` ``--model`` ``--channels`` ``--hours``
 2. 环境变量          ``MICROALGAE_PIPELINE_CONFIG`` 指向的 YAML，或 ``MICROALGAE_*`` 单值覆盖
-3. YAML 配置文件     ``--config`` 指定，缺省读 ``configs/pipeline.yaml``
+3. YAML 配置文件     ``--config`` 指定，缺省读 ``configs/batch.yaml``
 4. 内置默认值        与重构前脚本中的硬编码**逐字一致**，保证不配置时行为完全不变
 
 用法
@@ -29,7 +30,8 @@
 
 命令行::
 
-    python run_pipeline.py --config configs/batch_20261001.yaml
+    python run_pipeline.py                          # 自动读 configs/batch.yaml
+    python run_pipeline.py --date 20261015          # 换批次，只改日期
     python postprocessing/08_growth_curve_batch.py --date 20261001 --hours 96
 """
 
@@ -51,7 +53,10 @@ except ImportError:  # pragma: no cover - 允许无 YAML 环境下靠 CLI / 默�
 PACKAGE_ROOT = Path(__file__).resolve().parent          # microalgae_identification/
 REPO_ROOT = PACKAGE_ROOT.parent                          # 仓库根
 CONFIG_DIR = REPO_ROOT / "configs"
-DEFAULT_CONFIG_FILE = CONFIG_DIR / "pipeline.yaml"
+# 当前批次配置。文件名固定，不编码日期：换批次只改里面的 batch.date 字段，
+# 或用 --date / MICROALGAE_* 环境变量覆盖。模板见 configs/batch.example.yaml。
+DEFAULT_CONFIG_FILE = CONFIG_DIR / "batch.yaml"
+EXAMPLE_CONFIG_FILE = CONFIG_DIR / "batch.example.yaml"
 ENV_CONFIG_FILE = "MICROALGAE_PIPELINE_CONFIG"
 
 # ------------------------------------------------------------------ 内置默认值
@@ -209,7 +214,7 @@ def _parse_channels(raw: str) -> List[int]:
 
 def add_config_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     """给任意步骤脚本挂上统一的配置参数。"""
-    parser.add_argument("--config", help="批次 YAML 配置文件（缺省 configs/pipeline.yaml）")
+    parser.add_argument("--config", help="批次 YAML 配置文件（缺省 configs/batch.yaml）")
     parser.add_argument("--date", dest="batch_date", help="批次日期，如 20261001")
     parser.add_argument("--photo-root", help="批次根目录（含 CH1..CHn 的目录）")
     parser.add_argument("--model", dest="model_weights", help="模型权重 .pt 路径")

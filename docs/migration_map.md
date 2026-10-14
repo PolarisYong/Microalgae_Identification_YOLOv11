@@ -23,8 +23,8 @@
 
 | 新文件 | 用途 |
 |---|---|
-| `configs/pipeline.example.yaml` | 批次配置模板 |
-| `configs/batch_20261001.yaml` | 20261001 批次配置实例 |
+| `configs/batch.example.yaml` | 批次配置模板 |
+| `configs/batch.yaml` | 当前批次配置（文件名固定不含日期，日期是文件里的 `batch.date` 字段；缺省自动加载） |
 | `microalgae_identification/config.py` | 配置加载（YAML → 环境变量 → 命令行） |
 | `microalgae_identification/run_pipeline.py` | 一键执行入口 |
 
@@ -116,3 +116,4 @@
 | 算法超参（MERGE_IOU=0.60、TILE 512/192、44.3×42.8 μm 等） | ✅ 未变 |
 | 默认权重 `runs/segment/train4/weights/best.pt` | ✅ 未变，已入库 |
 | `08` 的工况映射默认值（N287…N900） | ✅ 未变，现已可由配置覆盖 |
+

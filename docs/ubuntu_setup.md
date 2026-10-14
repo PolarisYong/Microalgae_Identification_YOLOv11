@@ -76,7 +76,7 @@ ssh -T git@github.com          # 见到 "Hi xxx!" 即成功
 ```bash
 ls microalgae_identification/detection/chamber_template.png   # 腔室掩膜模板，识别必需
 ls runs/segment/train4/weights/best.pt                        # 默认权重（约 22 MB）
-ls configs/pipeline.example.yaml                              # 批次配置模板
+ls configs/batch.example.yaml                                 # 批次配置模板
 ```
 
 ---
@@ -166,7 +166,7 @@ python microalgae_identification/run_pipeline.py --dry-run
 ### 6.2 写批次配置
 
 ```bash
-cp configs/pipeline.example.yaml configs/batch_20261001.yaml
+cp configs/batch.example.yaml configs/batch.yaml
 ```
 
 ```yaml
@@ -191,7 +191,7 @@ summary:
 
 **先干跑一次，核对解析出来的路径：**
 ```bash
-python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml --dry-run
+python microalgae_identification/run_pipeline.py --dry-run
 ```
 
 ---
@@ -203,7 +203,7 @@ conda activate microalgae
 cd Microalgae_Identification_YOLOv11
 
 # 全流程一键跑（6 个阶段）
-python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml
+python microalgae_identification/run_pipeline.py
 ```
 
 阶段与脚本对应关系：
@@ -287,3 +287,4 @@ BASE = Path(__file__).resolve().parent
 ```
 
 识别主流程（`microalgae_identification/`）已全部改为相对路径 + 集中配置，**不存在这个问题**。
+

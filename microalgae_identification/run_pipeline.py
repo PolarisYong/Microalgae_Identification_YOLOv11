@@ -14,8 +14,11 @@
 
 常见用法
 --------
-    # 跑完整流程（使用 configs/pipeline.yaml 或 --config 指定的批次配置）
-    python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml
+    # 跑完整流程（自动读 configs/batch.yaml；文件名固定不含日期）
+    python microalgae_identification/run_pipeline.py
+
+    # 换批次：只改日期，配置不复制、文件名不变
+    python microalgae_identification/run_pipeline.py --date 20261015
 
     # 只跑识别 + 之后的步骤（图片已分拣好）
     python microalgae_identification/run_pipeline.py --from detect
@@ -116,7 +119,7 @@ def main(argv=None) -> int:
         print("\n[dry-run] 未执行任何脚本。完整命令示例：")
         for name in stages:
             script = next(s for n, _, s in STAGES if n == name)
-            print(f"  python {PACKAGE_ROOT.name}/{script} --config {cfg.config_path or 'configs/pipeline.yaml'}")
+            print(f"  python {PACKAGE_ROOT.name}/{script} --config {cfg.config_path or 'configs/batch.yaml'}")
         return 0
 
     started = time.time()

@@ -1,13 +1,16 @@
 # =============================================================================
-# 微藻识别主流程 —— 批次配置
+# 微藻识别主流程 —— 当前批次配置（唯一需要改的文件）
 # =============================================================================
-# 这是整条流程唯一需要改的文件。复制本文件为 configs/pipeline.yaml
-# （或任意 batch_<日期>.yaml，用 --config 指定），改完即可一键跑完全流程：
+# 文件名固定叫 batch.yaml，**不含日期**。日期只是里面的 batch.date 字段：
+# 换批次只改 batch.date（或用命令行 --date 20261015 覆盖），文件名不动，
+# 配置也不用复制一份。每跑完一批提交一次 git，提交历史就是各批次的留档。
 #
-#     python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml
+#     python microalgae_identification/run_pipeline.py            # 自动读本文件
+#     python microalgae_identification/run_pipeline.py --date 20261015
 #
 # 所有字段都可以被命令行参数覆盖，优先级：命令行 > 本文件 > 内置默认值。
 # 内置默认值与重构前脚本内的硬编码逐字一致，因此**不配置也能得到原来的行为**。
+# 模板见 configs/batch.example.yaml。
 # =============================================================================
 
 batch:

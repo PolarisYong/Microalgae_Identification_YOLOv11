@@ -16,9 +16,9 @@ microalgae_identification/
 ## 一键运行
 
 ```bash
-python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml
-python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml --dry-run
-python microalgae_identification/run_pipeline.py --config configs/batch_20261001.yaml --from detect
+python microalgae_identification/run_pipeline.py
+python microalgae_identification/run_pipeline.py --dry-run
+python microalgae_identification/run_pipeline.py --from detect
 ```
 
 阶段名：`sort` `move` `detect` `merge` `standardize` `visualize`。
@@ -44,3 +44,4 @@ python microalgae_identification/run_pipeline.py --config configs/batch_20261001
   用于性能调优，与批次路径无关。
 
 完整的目录结构与使用说明见仓库根 [`README.md`](../README.md)。
+
