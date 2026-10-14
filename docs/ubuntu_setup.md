@@ -36,8 +36,8 @@ sudo apt install -y build-essential git wget curl \
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh -b -p "$HOME/miniconda3"
 "$HOME/miniconda3/bin/conda" init bash
-exec bash          # 或关闭重开终端，让 conda 命令生效
-conda --version    # 验证
+source ~/.bashrc          # 或关闭重开终端，让 conda 命令生效
+conda --version           # 验证
 ```
 
 > 如果用的是 `zsh`，把上面两处 `bash` 换成 `zsh`。
