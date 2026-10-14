@@ -1329,17 +1329,31 @@ def process_image(model, image_path):
     }
 
 
-def calculate_actual_area_um2(instance, source_shape_hw):
-    source_h, source_w = source_shape_hw
+def area_conversion_factor(source_shape_hw):
+    """返回 像素面积 -> μm² 的换算系数 k。
+
+    k = ((ACTUAL_WIDTH_UM / img_w + ACTUAL_HEIGHT_UM / img_h) / 2) ** 2
+
+    标定常数只进入该系数，不参与检测/合并/筛选（相关阈值均以像素为单位），
+    因此标定修正等价于对所有面积统一乘以 k_new / k_old，无需重跑推理。
+    """
+    source_h, source_w = source_shape_hw[:2]
     if source_h <= 0 or source_w <= 0:
         return 0.0
 
     pixel_to_um_w = ACTUAL_WIDTH_UM / source_w
     pixel_to_um_h = ACTUAL_HEIGHT_UM / source_h
     avg_conversion = (pixel_to_um_w + pixel_to_um_h) / 2.0
+    return avg_conversion ** 2
 
-    pixel_area = float(instance.area_pixels)
-    return pixel_area * (avg_conversion ** 2)
+
+# 供导出统计块使用（避免重复实现）
+_current_area_factor = area_conversion_factor
+
+
+def calculate_actual_area_um2(instance, source_shape_hw):
+    factor = area_conversion_factor(source_shape_hw)
+    return float(instance.area_pixels) * factor
 
 
 def process_folder(folder_path, model):
@@ -1403,6 +1417,8 @@ def process_folder(folder_path, model):
                             "目标编号": i,
                             "类别ID": inst.cls,
                             "置信度": f"{inst.conf:.2f}",
+                            # 保留像素面积：标定常数一旦修正，可直接由像素重算，无需重跑推理
+                            "面积(像素)": int(inst.area_pixels),
                             "实际面积(μm²)": f"{area_um2:.2f}",
                         }
                     )
@@ -1434,7 +1450,9 @@ def process_folder(folder_path, model):
                             "图片名称": img_name,
                             "原始尺寸(像素)": f"{original_img.shape[1]}x{original_img.shape[0]}",
                             "目标总数": len(merged_instances),
+                            "总面积(像素)": int(sum(inst.area_pixels for inst in merged_instances)),
                             "总面积(μm²)": f"{total_area:.2f}",
+                            "换算系数(μm²/px)": f"{_current_area_factor(original_img.shape):.8f}",
                         }
                     ]
                 )
