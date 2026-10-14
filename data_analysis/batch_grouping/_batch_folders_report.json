@@ -1,0 +1,1379 @@
+{
+  "root": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果",
+  "output_label": "18_batch_20260915",
+  "max_group_size": 18,
+  "min_group_size": 12,
+  "max_mean_spread_ratio": null,
+  "total_folders": 15,
+  "successful_count": 14,
+  "failed_count": 1,
+  "results": [
+    {
+      "folder": "L120‑N160‑IC0.5%",
+      "ok": true,
+      "elapsed_seconds": 16.33,
+      "source_files": [
+        "20260712_CH10_可视化结果_96.xlsx",
+        "20260712_CH7_可视化结果_96.xlsx",
+        "20260712_CH8_可视化结果_96.xlsx"
+      ],
+      "strict_count": 70,
+      "group_sizes": [
+        18,
+        18,
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.1149277777777778,
+          "sample_sd": 0.011651246111369909,
+          "cv": 0.1013788514548549,
+          "jb": 1.2078680388690421,
+          "p_value": 0.5466568417322467
+        },
+        {
+          "mean": 0.13990000000000002,
+          "sample_sd": 0.006070662334249091,
+          "cv": 0.04339286872229514,
+          "jb": 0.9656050938511849,
+          "p_value": 0.6170516500910004
+        },
+        {
+          "mean": 0.1576611111111111,
+          "sample_sd": 0.005796158858790866,
+          "cv": 0.03676340232504161,
+          "jb": 1.2017857416444682,
+          "p_value": 0.5483218368935027
+        },
+        {
+          "mean": 0.17937500000000003,
+          "sample_sd": 0.005063797532933696,
+          "cv": 0.028230230148759278,
+          "jb": 2.318288593415132,
+          "p_value": 0.3137545468441621
+        }
+      ],
+      "remaining_strict_count": 4,
+      "selected_total": 66,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC0.5%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC0.5%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC0.5%\\18_batch_20260915\\selected__groups_2_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC0.5%\\18_batch_20260915\\selected__groups_3_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC0.5%\\18_batch_20260915\\selected__groups_4_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC0.5%\\18_batch_20260915\\20260712_CH10_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC0.5%\\18_batch_20260915\\20260712_CH7_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC0.5%\\18_batch_20260915\\20260712_CH8_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC0.5%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.1149277777777778,
+          "sample_sd": 0.011651246111369909,
+          "cv": 0.1013788514548549,
+          "jb": 1.2078680388690421,
+          "p_value": 0.5466568417322467,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_18.xlsx",
+          "count": 18,
+          "mean": 0.13990000000000002,
+          "sample_sd": 0.006070662334249091,
+          "cv": 0.04339286872229514,
+          "jb": 0.9656050938511849,
+          "p_value": 0.6170516500910004,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_3_18.xlsx",
+          "count": 18,
+          "mean": 0.1576611111111111,
+          "sample_sd": 0.005796158858790866,
+          "cv": 0.03676340232504161,
+          "jb": 1.2017857416444682,
+          "p_value": 0.5483218368935027,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_4_12.xlsx",
+          "count": 12,
+          "mean": 0.17937500000000003,
+          "sample_sd": 0.005063797532933696,
+          "cv": 0.028230230148759278,
+          "jb": 2.318288593415132,
+          "p_value": 0.3137545468441621,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        18,
+        18,
+        12
+      ]
+    },
+    {
+      "folder": "L120‑N160‑IC10%",
+      "ok": true,
+      "elapsed_seconds": 16.98,
+      "source_files": [
+        "20260504_CH5_可视化结果_96.xlsx",
+        "20260712_CH9_可视化结果_96.xlsx"
+      ],
+      "strict_count": 70,
+      "group_sizes": [
+        18,
+        18,
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.1315388888888889,
+          "sample_sd": 0.01033822939037941,
+          "cv": 0.07859447101694868,
+          "jb": 0.9092836994340612,
+          "p_value": 0.6346752363631725
+        },
+        {
+          "mean": 0.1744666666666667,
+          "sample_sd": 0.014920455757114126,
+          "cv": 0.08552038072476571,
+          "jb": 0.6513157460039882,
+          "p_value": 0.7220521787224221
+        },
+        {
+          "mean": 0.20728333333333335,
+          "sample_sd": 0.003962953444086874,
+          "cv": 0.019118533942688143,
+          "jb": 0.5242565795513605,
+          "p_value": 0.7694123096430988
+        },
+        {
+          "mean": 0.238175,
+          "sample_sd": 0.02431318852729186,
+          "cv": 0.10208119461442998,
+          "jb": 1.803709404520367,
+          "p_value": 0.4058162929252839
+        }
+      ],
+      "remaining_strict_count": 4,
+      "selected_total": 66,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC10%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC10%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC10%\\18_batch_20260915\\selected__groups_2_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC10%\\18_batch_20260915\\selected__groups_3_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC10%\\18_batch_20260915\\selected__groups_4_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC10%\\18_batch_20260915\\20260504_CH5_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC10%\\18_batch_20260915\\20260712_CH9_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC10%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.1315388888888889,
+          "sample_sd": 0.01033822939037941,
+          "cv": 0.07859447101694868,
+          "jb": 0.9092836994340612,
+          "p_value": 0.6346752363631725,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_18.xlsx",
+          "count": 18,
+          "mean": 0.1744666666666667,
+          "sample_sd": 0.014920455757114126,
+          "cv": 0.08552038072476571,
+          "jb": 0.6513157460039882,
+          "p_value": 0.7220521787224221,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_3_18.xlsx",
+          "count": 18,
+          "mean": 0.20728333333333335,
+          "sample_sd": 0.003962953444086874,
+          "cv": 0.019118533942688143,
+          "jb": 0.5242565795513605,
+          "p_value": 0.7694123096430988,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_4_12.xlsx",
+          "count": 12,
+          "mean": 0.238175,
+          "sample_sd": 0.02431318852729186,
+          "cv": 0.10208119461442998,
+          "jb": 1.803709404520367,
+          "p_value": 0.4058162929252839,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        18,
+        18,
+        12
+      ]
+    },
+    {
+      "folder": "L120‑N160‑IC5.25%",
+      "ok": true,
+      "elapsed_seconds": 38.06,
+      "source_files": [
+        "20260504_CH1_可视化结果_96.xlsx",
+        "20260504_CH2_可视化结果_96.xlsx",
+        "20260504_CH4_可视化结果_96.xlsx",
+        "20260712_CH3_可视化结果_96.xlsx",
+        "20260712_CH4_可视化结果_96.xlsx",
+        "20260712_CH5_可视化结果_96.xlsx",
+        "20260712_CH6_可视化结果_96.xlsx"
+      ],
+      "strict_count": 158,
+      "group_sizes": [
+        18,
+        18,
+        18,
+        18,
+        18,
+        18,
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.10286666666666669,
+          "sample_sd": 0.007187652811674786,
+          "cv": 0.06987348812386375,
+          "jb": 1.4006101181534147,
+          "p_value": 0.4964338390411515
+        },
+        {
+          "mean": 0.12228888888888889,
+          "sample_sd": 0.0037323528124146945,
+          "cv": 0.03052078440099241,
+          "jb": 0.9328942616932124,
+          "p_value": 0.6272267689023338
+        },
+        {
+          "mean": 0.13513888888888892,
+          "sample_sd": 0.002382568779055099,
+          "cv": 0.017630519228362496,
+          "jb": 4.622897877403512,
+          "p_value": 0.0991175322360652
+        },
+        {
+          "mean": 0.14334444444444444,
+          "sample_sd": 0.002547252781336423,
+          "cv": 0.017770153501300526,
+          "jb": 1.069205335865246,
+          "p_value": 0.5859020415713869
+        },
+        {
+          "mean": 0.14990000000000003,
+          "sample_sd": 0.001767350958854726,
+          "cv": 0.011790199858937462,
+          "jb": 1.3599799680915212,
+          "p_value": 0.5066220666436139
+        },
+        {
+          "mean": 0.15982222222222223,
+          "sample_sd": 0.004582647007436994,
+          "cv": 0.028673403133295985,
+          "jb": 1.5769625352997594,
+          "p_value": 0.4545345877273488
+        },
+        {
+          "mean": 0.17145,
+          "sample_sd": 0.003645504887166239,
+          "cv": 0.021262787326720555,
+          "jb": 1.5348044346091474,
+          "p_value": 0.4642174393176173
+        },
+        {
+          "mean": 0.1814583333333333,
+          "sample_sd": 0.0028614866871271767,
+          "cv": 0.015769387024351836,
+          "jb": 1.5825925299376657,
+          "p_value": 0.45325687330659886
+        }
+      ],
+      "remaining_strict_count": 20,
+      "selected_total": 138,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_2_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_3_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_4_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_5_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_6_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_7_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_8_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\20260504_CH1_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\20260504_CH2_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\20260504_CH4_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\20260712_CH3_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\20260712_CH4_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\20260712_CH5_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\20260712_CH6_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N160‑IC5.25%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.10286666666666669,
+          "sample_sd": 0.007187652811674786,
+          "cv": 0.06987348812386375,
+          "jb": 1.4006101181534147,
+          "p_value": 0.4964338390411515,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_18.xlsx",
+          "count": 18,
+          "mean": 0.12228888888888889,
+          "sample_sd": 0.0037323528124146945,
+          "cv": 0.03052078440099241,
+          "jb": 0.9328942616932124,
+          "p_value": 0.6272267689023338,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_3_18.xlsx",
+          "count": 18,
+          "mean": 0.13513888888888892,
+          "sample_sd": 0.002382568779055099,
+          "cv": 0.017630519228362496,
+          "jb": 4.622897877403512,
+          "p_value": 0.0991175322360652,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_4_18.xlsx",
+          "count": 18,
+          "mean": 0.14334444444444444,
+          "sample_sd": 0.002547252781336423,
+          "cv": 0.017770153501300526,
+          "jb": 1.069205335865246,
+          "p_value": 0.5859020415713869,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_5_18.xlsx",
+          "count": 18,
+          "mean": 0.14990000000000003,
+          "sample_sd": 0.001767350958854726,
+          "cv": 0.011790199858937462,
+          "jb": 1.3599799680915212,
+          "p_value": 0.5066220666436139,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_6_18.xlsx",
+          "count": 18,
+          "mean": 0.15982222222222223,
+          "sample_sd": 0.004582647007436994,
+          "cv": 0.028673403133295985,
+          "jb": 1.5769625352997594,
+          "p_value": 0.4545345877273488,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_7_18.xlsx",
+          "count": 18,
+          "mean": 0.17145,
+          "sample_sd": 0.003645504887166239,
+          "cv": 0.021262787326720555,
+          "jb": 1.5348044346091474,
+          "p_value": 0.4642174393176173,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_8_12.xlsx",
+          "count": 12,
+          "mean": 0.1814583333333333,
+          "sample_sd": 0.0028614866871271767,
+          "cv": 0.015769387024351836,
+          "jb": 1.5825925299376657,
+          "p_value": 0.45325687330659886,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        18,
+        18,
+        18,
+        18,
+        18,
+        18,
+        12
+      ]
+    },
+    {
+      "folder": "L120‑N20‑IC5.25%",
+      "ok": true,
+      "elapsed_seconds": 8.57,
+      "source_files": [
+        "20260504_CH3_可视化结果_96.xlsx",
+        "20260712_CH1_可视化结果_96.xlsx",
+        "20260712_CH2_可视化结果_96.xlsx"
+      ],
+      "strict_count": 36,
+      "group_sizes": [
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.14581666666666668,
+          "sample_sd": 0.020118362990356964,
+          "cv": 0.13797025710611702,
+          "jb": 0.7230364941609706,
+          "p_value": 0.6966178847169133
+        },
+        {
+          "mean": 0.19734166666666667,
+          "sample_sd": 0.01763897844564873,
+          "cv": 0.08938294047877401,
+          "jb": 1.7089095924390356,
+          "p_value": 0.42551512030442706
+        }
+      ],
+      "remaining_strict_count": 6,
+      "selected_total": 30,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N20‑IC5.25%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N20‑IC5.25%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N20‑IC5.25%\\18_batch_20260915\\selected__groups_2_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N20‑IC5.25%\\18_batch_20260915\\20260504_CH3_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N20‑IC5.25%\\18_batch_20260915\\20260712_CH1_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N20‑IC5.25%\\18_batch_20260915\\20260712_CH2_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N20‑IC5.25%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.14581666666666668,
+          "sample_sd": 0.020118362990356964,
+          "cv": 0.13797025710611702,
+          "jb": 0.7230364941609706,
+          "p_value": 0.6966178847169133,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_12.xlsx",
+          "count": 12,
+          "mean": 0.19734166666666667,
+          "sample_sd": 0.01763897844564873,
+          "cv": 0.08938294047877401,
+          "jb": 1.7089095924390356,
+          "p_value": 0.42551512030442706,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        12
+      ]
+    },
+    {
+      "folder": "L120‑N300‑IC5.25%",
+      "ok": true,
+      "elapsed_seconds": 12.97,
+      "source_files": [
+        "20260504_CH6_可视化结果_96.xlsx",
+        "20260712_CH11_可视化结果_96.xlsx",
+        "20260712_CH12_可视化结果_96.xlsx"
+      ],
+      "strict_count": 61,
+      "group_sizes": [
+        18,
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.17833888888888888,
+          "sample_sd": 0.008958672360205856,
+          "cv": 0.05023398102355235,
+          "jb": 1.1504815696867943,
+          "p_value": 0.562569394313998
+        },
+        {
+          "mean": 0.20263333333333333,
+          "sample_sd": 0.00599745043870359,
+          "cv": 0.029597551103982184,
+          "jb": 1.6991026327851606,
+          "p_value": 0.4276067490516353
+        },
+        {
+          "mean": 0.22084166666666669,
+          "sample_sd": 0.0067653473112933606,
+          "cv": 0.030634378980234828,
+          "jb": 0.5082926372335421,
+          "p_value": 0.7755783121980012
+        }
+      ],
+      "remaining_strict_count": 13,
+      "selected_total": 48,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N300‑IC5.25%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N300‑IC5.25%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N300‑IC5.25%\\18_batch_20260915\\selected__groups_2_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N300‑IC5.25%\\18_batch_20260915\\selected__groups_3_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N300‑IC5.25%\\18_batch_20260915\\20260504_CH6_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N300‑IC5.25%\\18_batch_20260915\\20260712_CH11_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N300‑IC5.25%\\18_batch_20260915\\20260712_CH12_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L120‑N300‑IC5.25%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.17833888888888888,
+          "sample_sd": 0.008958672360205856,
+          "cv": 0.05023398102355235,
+          "jb": 1.1504815696867943,
+          "p_value": 0.562569394313998,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_18.xlsx",
+          "count": 18,
+          "mean": 0.20263333333333333,
+          "sample_sd": 0.00599745043870359,
+          "cv": 0.029597551103982184,
+          "jb": 1.6991026327851606,
+          "p_value": 0.4276067490516353,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_3_12.xlsx",
+          "count": 12,
+          "mean": 0.22084166666666669,
+          "sample_sd": 0.0067653473112933606,
+          "cv": 0.030634378980234828,
+          "jb": 0.5082926372335421,
+          "p_value": 0.7755783121980012,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        18,
+        12
+      ]
+    },
+    {
+      "folder": "L210‑N160‑IC5.25%",
+      "ok": true,
+      "elapsed_seconds": 15.9,
+      "source_files": [
+        "20260609_CH1_可视化结果_96.xlsx",
+        "20260609_CH6_可视化结果_96.xlsx",
+        "20260719_CH4_可视化结果_96.xlsx",
+        "20260719_CH5_可视化结果_96.xlsx"
+      ],
+      "strict_count": 72,
+      "group_sizes": [
+        18,
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.12517777777777778,
+          "sample_sd": 0.017740633172451233,
+          "cv": 0.14172350306414086,
+          "jb": 1.9472591856891064,
+          "p_value": 0.37770961501190287
+        },
+        {
+          "mean": 0.1695111111111111,
+          "sample_sd": 0.013996801688826622,
+          "cv": 0.08257158835831122,
+          "jb": 1.2139762275931836,
+          "p_value": 0.5449898470292267
+        },
+        {
+          "mean": 0.22395833333333334,
+          "sample_sd": 0.01960377785174598,
+          "cv": 0.08753314761709832,
+          "jb": 0.3606558292266051,
+          "p_value": 0.8349963590054508
+        }
+      ],
+      "remaining_strict_count": 24,
+      "selected_total": 48,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N160‑IC5.25%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_2_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_3_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N160‑IC5.25%\\18_batch_20260915\\20260609_CH1_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N160‑IC5.25%\\18_batch_20260915\\20260609_CH6_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N160‑IC5.25%\\18_batch_20260915\\20260719_CH4_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N160‑IC5.25%\\18_batch_20260915\\20260719_CH5_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N160‑IC5.25%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.12517777777777778,
+          "sample_sd": 0.017740633172451233,
+          "cv": 0.14172350306414086,
+          "jb": 1.9472591856891064,
+          "p_value": 0.37770961501190287,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_18.xlsx",
+          "count": 18,
+          "mean": 0.1695111111111111,
+          "sample_sd": 0.013996801688826622,
+          "cv": 0.08257158835831122,
+          "jb": 1.2139762275931836,
+          "p_value": 0.5449898470292267,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_3_12.xlsx",
+          "count": 12,
+          "mean": 0.22395833333333334,
+          "sample_sd": 0.01960377785174598,
+          "cv": 0.08753314761709832,
+          "jb": 0.3606558292266051,
+          "p_value": 0.8349963590054508,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        18,
+        12
+      ]
+    },
+    {
+      "folder": "L210‑N20‑IC0.5%",
+      "ok": true,
+      "elapsed_seconds": 9.53,
+      "source_files": [
+        "20260609_CH2_可视化结果_96.xlsx",
+        "20260719_CH1_可视化结果_96.xlsx",
+        "20260719_CH2_可视化结果_96.xlsx",
+        "20260719_CH3_可视化结果_96.xlsx"
+      ],
+      "strict_count": 44,
+      "group_sizes": [
+        17
+      ],
+      "group_stats": [
+        {
+          "mean": 0.08304117647058822,
+          "sample_sd": 0.012237956264401818,
+          "cv": 0.1473721445737982,
+          "jb": 0.7579375833078627,
+          "p_value": 0.6845669765360219
+        }
+      ],
+      "remaining_strict_count": 27,
+      "selected_total": 17,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC0.5%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC0.5%\\18_batch_20260915\\selected__groups_1_17.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC0.5%\\18_batch_20260915\\20260609_CH2_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC0.5%\\18_batch_20260915\\20260719_CH1_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC0.5%\\18_batch_20260915\\20260719_CH2_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC0.5%\\18_batch_20260915\\20260719_CH3_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC0.5%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_17.xlsx",
+          "count": 17,
+          "mean": 0.08304117647058822,
+          "sample_sd": 0.012237956264401818,
+          "cv": 0.1473721445737982,
+          "jb": 0.7579375833078627,
+          "p_value": 0.6845669765360219,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        17
+      ]
+    },
+    {
+      "folder": "L210‑N20‑IC10%",
+      "ok": true,
+      "elapsed_seconds": 16.94,
+      "source_files": [
+        "20260609_CH3_可视化结果_96.xlsx",
+        "20260719_CH10_可视化结果_96.xlsx",
+        "20260719_CH11_可视化结果_96.xlsx",
+        "20260719_CH12_可视化结果_96.xlsx"
+      ],
+      "strict_count": 67,
+      "group_sizes": [
+        18,
+        18,
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.08186666666666667,
+          "sample_sd": 0.012249849939056878,
+          "cv": 0.1496317174966231,
+          "jb": 2.43187474142567,
+          "p_value": 0.29643201732990293
+        },
+        {
+          "mean": 0.10847222222222222,
+          "sample_sd": 0.008561253725914044,
+          "cv": 0.07892577058461091,
+          "jb": 1.1711744923373744,
+          "p_value": 0.5567787995716945
+        },
+        {
+          "mean": 0.14132222222222224,
+          "sample_sd": 0.011907069356209977,
+          "cv": 0.08425475603891013,
+          "jb": 0.9433561594480343,
+          "p_value": 0.6239543441448635
+        },
+        {
+          "mean": 0.19131666666666666,
+          "sample_sd": 0.02565430438217597,
+          "cv": 0.1340934108311315,
+          "jb": 4.026387357868171,
+          "p_value": 0.13356144044870774
+        }
+      ],
+      "remaining_strict_count": 1,
+      "selected_total": 66,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC10%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC10%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC10%\\18_batch_20260915\\selected__groups_2_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC10%\\18_batch_20260915\\selected__groups_3_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC10%\\18_batch_20260915\\selected__groups_4_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC10%\\18_batch_20260915\\20260609_CH3_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC10%\\18_batch_20260915\\20260719_CH10_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC10%\\18_batch_20260915\\20260719_CH11_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC10%\\18_batch_20260915\\20260719_CH12_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N20‑IC10%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.08186666666666667,
+          "sample_sd": 0.012249849939056878,
+          "cv": 0.1496317174966231,
+          "jb": 2.43187474142567,
+          "p_value": 0.29643201732990293,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_18.xlsx",
+          "count": 18,
+          "mean": 0.10847222222222222,
+          "sample_sd": 0.008561253725914044,
+          "cv": 0.07892577058461091,
+          "jb": 1.1711744923373744,
+          "p_value": 0.5567787995716945,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_3_18.xlsx",
+          "count": 18,
+          "mean": 0.14132222222222224,
+          "sample_sd": 0.011907069356209977,
+          "cv": 0.08425475603891013,
+          "jb": 0.9433561594480343,
+          "p_value": 0.6239543441448635,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_4_12.xlsx",
+          "count": 12,
+          "mean": 0.19131666666666666,
+          "sample_sd": 0.02565430438217597,
+          "cv": 0.1340934108311315,
+          "jb": 4.026387357868171,
+          "p_value": 0.13356144044870774,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        18,
+        18,
+        12
+      ]
+    },
+    {
+      "folder": "L210‑N300‑IC0.5%",
+      "ok": true,
+      "elapsed_seconds": 15.53,
+      "source_files": [
+        "20260609_CH4_可视化结果_96.xlsx",
+        "20260719_CH6_可视化结果_96.xlsx",
+        "20260719_CH7_可视化结果_96.xlsx"
+      ],
+      "strict_count": 57,
+      "group_sizes": [
+        18,
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.09593888888888888,
+          "sample_sd": 0.01071404459734917,
+          "cv": 0.11167572109113735,
+          "jb": 1.4013678075783462,
+          "p_value": 0.49624580332655877
+        },
+        {
+          "mean": 0.18625555555555554,
+          "sample_sd": 0.01908997957729232,
+          "cv": 0.10249347741790307,
+          "jb": 1.3085739875728315,
+          "p_value": 0.5198125600730785
+        },
+        {
+          "mean": 0.231175,
+          "sample_sd": 0.010430211799470715,
+          "cv": 0.0451182515387508,
+          "jb": 1.2616039214501724,
+          "p_value": 0.532164854520026
+        }
+      ],
+      "remaining_strict_count": 9,
+      "selected_total": 48,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC0.5%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC0.5%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC0.5%\\18_batch_20260915\\selected__groups_2_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC0.5%\\18_batch_20260915\\selected__groups_3_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC0.5%\\18_batch_20260915\\20260609_CH4_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC0.5%\\18_batch_20260915\\20260719_CH6_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC0.5%\\18_batch_20260915\\20260719_CH7_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC0.5%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.09593888888888888,
+          "sample_sd": 0.01071404459734917,
+          "cv": 0.11167572109113735,
+          "jb": 1.4013678075783462,
+          "p_value": 0.49624580332655877,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_18.xlsx",
+          "count": 18,
+          "mean": 0.18625555555555554,
+          "sample_sd": 0.01908997957729232,
+          "cv": 0.10249347741790307,
+          "jb": 1.3085739875728315,
+          "p_value": 0.5198125600730785,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_3_12.xlsx",
+          "count": 12,
+          "mean": 0.231175,
+          "sample_sd": 0.010430211799470715,
+          "cv": 0.0451182515387508,
+          "jb": 1.2616039214501724,
+          "p_value": 0.532164854520026,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        18,
+        12
+      ]
+    },
+    {
+      "folder": "L210‑N300‑IC10%",
+      "ok": true,
+      "elapsed_seconds": 18.49,
+      "source_files": [
+        "20260609_CH5_可视化结果_96.xlsx",
+        "20260719_CH8_可视化结果_96.xlsx",
+        "20260719_CH9_可视化结果_96.xlsx"
+      ],
+      "strict_count": 53,
+      "group_sizes": [
+        18,
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.09116666666666666,
+          "sample_sd": 0.00840525045992787,
+          "cv": 0.09219653155313934,
+          "jb": 5.076930842470514,
+          "p_value": 0.07898751940306901
+        },
+        {
+          "mean": 0.12868333333333334,
+          "sample_sd": 0.017756266499464348,
+          "cv": 0.13798419763862982,
+          "jb": 1.1554552962281508,
+          "p_value": 0.561172099311011
+        },
+        {
+          "mean": 0.17323333333333332,
+          "sample_sd": 0.010325989570305628,
+          "cv": 0.05960740563963226,
+          "jb": 1.144762760146746,
+          "p_value": 0.5641803099559077
+        }
+      ],
+      "remaining_strict_count": 5,
+      "selected_total": 48,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC10%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC10%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC10%\\18_batch_20260915\\selected__groups_2_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC10%\\18_batch_20260915\\selected__groups_3_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC10%\\18_batch_20260915\\20260609_CH5_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC10%\\18_batch_20260915\\20260719_CH8_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC10%\\18_batch_20260915\\20260719_CH9_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L210‑N300‑IC10%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.09116666666666666,
+          "sample_sd": 0.00840525045992787,
+          "cv": 0.09219653155313934,
+          "jb": 5.076930842470514,
+          "p_value": 0.07898751940306901,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_18.xlsx",
+          "count": 18,
+          "mean": 0.12868333333333334,
+          "sample_sd": 0.017756266499464348,
+          "cv": 0.13798419763862982,
+          "jb": 1.1554552962281508,
+          "p_value": 0.561172099311011,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_3_12.xlsx",
+          "count": 12,
+          "mean": 0.17323333333333332,
+          "sample_sd": 0.010325989570305628,
+          "cv": 0.05960740563963226,
+          "jb": 1.144762760146746,
+          "p_value": 0.5641803099559077,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        18,
+        12
+      ]
+    },
+    {
+      "folder": "L30‑N160‑IC5.25%",
+      "ok": true,
+      "elapsed_seconds": 18.28,
+      "source_files": [
+        "20260531_CH1_可视化结果_96.xlsx",
+        "20260531_CH2_可视化结果_96.xlsx",
+        "20260726_CH1_可视化结果_96.xlsx",
+        "20260726_CH2_可视化结果_96.xlsx"
+      ],
+      "strict_count": 69,
+      "group_sizes": [
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.07957222222222222,
+          "sample_sd": 0.010627976707204851,
+          "cv": 0.1335639047194633,
+          "jb": 1.1748453270252976,
+          "p_value": 0.5557578153588971
+        },
+        {
+          "mean": 0.10933333333333332,
+          "sample_sd": 0.01238924264567182,
+          "cv": 0.11331624371041299,
+          "jb": 2.2150376603678743,
+          "p_value": 0.3303776680775626
+        }
+      ],
+      "remaining_strict_count": 39,
+      "selected_total": 30,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N160‑IC5.25%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N160‑IC5.25%\\18_batch_20260915\\selected__groups_2_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N160‑IC5.25%\\18_batch_20260915\\20260531_CH1_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N160‑IC5.25%\\18_batch_20260915\\20260531_CH2_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N160‑IC5.25%\\18_batch_20260915\\20260726_CH1_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N160‑IC5.25%\\18_batch_20260915\\20260726_CH2_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N160‑IC5.25%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.07957222222222222,
+          "sample_sd": 0.010627976707204851,
+          "cv": 0.1335639047194633,
+          "jb": 1.1748453270252976,
+          "p_value": 0.5557578153588971,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_12.xlsx",
+          "count": 12,
+          "mean": 0.10933333333333332,
+          "sample_sd": 0.01238924264567182,
+          "cv": 0.11331624371041299,
+          "jb": 2.2150376603678743,
+          "p_value": 0.3303776680775626,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        12
+      ]
+    },
+    {
+      "folder": "L30‑N20‑IC0.5%",
+      "ok": true,
+      "elapsed_seconds": 21.04,
+      "source_files": [
+        "20260531_CH3_可视化结果_96.xlsx",
+        "20260531_CH7_可视化结果_96.xlsx",
+        "20260726_CH4_可视化结果_96.xlsx",
+        "20260726_CH5_可视化结果_96.xlsx",
+        "20260726_CH6_可视化结果_96.xlsx"
+      ],
+      "strict_count": 81,
+      "group_sizes": [
+        18,
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.06558333333333333,
+          "sample_sd": 0.009373695987740812,
+          "cv": 0.14292802014344316,
+          "jb": 0.9456383436737908,
+          "p_value": 0.6232427608322287
+        },
+        {
+          "mean": 0.09588333333333335,
+          "sample_sd": 0.013001413950254885,
+          "cv": 0.13559618234230714,
+          "jb": 1.2562933438100803,
+          "p_value": 0.5335797836000015
+        },
+        {
+          "mean": 0.13702499999999998,
+          "sample_sd": 0.010147469456156853,
+          "cv": 0.0740556063211593,
+          "jb": 0.8216694731213005,
+          "p_value": 0.6630965081555374
+        }
+      ],
+      "remaining_strict_count": 33,
+      "selected_total": 48,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC0.5%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC0.5%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC0.5%\\18_batch_20260915\\selected__groups_2_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC0.5%\\18_batch_20260915\\selected__groups_3_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC0.5%\\18_batch_20260915\\20260531_CH3_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC0.5%\\18_batch_20260915\\20260531_CH7_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC0.5%\\18_batch_20260915\\20260726_CH4_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC0.5%\\18_batch_20260915\\20260726_CH5_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC0.5%\\18_batch_20260915\\20260726_CH6_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC0.5%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.06558333333333333,
+          "sample_sd": 0.009373695987740812,
+          "cv": 0.14292802014344316,
+          "jb": 0.9456383436737908,
+          "p_value": 0.6232427608322287,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_18.xlsx",
+          "count": 18,
+          "mean": 0.09588333333333335,
+          "sample_sd": 0.013001413950254885,
+          "cv": 0.13559618234230714,
+          "jb": 1.2562933438100803,
+          "p_value": 0.5335797836000015,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_3_12.xlsx",
+          "count": 12,
+          "mean": 0.13702499999999998,
+          "sample_sd": 0.010147469456156853,
+          "cv": 0.0740556063211593,
+          "jb": 0.8216694731213005,
+          "p_value": 0.6630965081555374,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        18,
+        12
+      ]
+    },
+    {
+      "folder": "L30‑N20‑IC10%",
+      "ok": true,
+      "elapsed_seconds": 11.43,
+      "source_files": [
+        "20260531_CH4_可视化结果_96.xlsx",
+        "20260726_CH3_可视化结果_96.xlsx",
+        "20260726_CH7_可视化结果_96.xlsx"
+      ],
+      "strict_count": 51,
+      "group_sizes": [
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.06577777777777777,
+          "sample_sd": 0.008858465911242962,
+          "cv": 0.13467262365065316,
+          "jb": 0.9387251170210512,
+          "p_value": 0.625400797665607
+        },
+        {
+          "mean": 0.08873333333333333,
+          "sample_sd": 0.006645618287581858,
+          "cv": 0.07489427070903672,
+          "jb": 0.47116884386553376,
+          "p_value": 0.7901089576678492
+        }
+      ],
+      "remaining_strict_count": 21,
+      "selected_total": 30,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC10%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC10%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC10%\\18_batch_20260915\\selected__groups_2_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC10%\\18_batch_20260915\\20260531_CH4_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC10%\\18_batch_20260915\\20260726_CH3_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC10%\\18_batch_20260915\\20260726_CH7_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N20‑IC10%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.06577777777777777,
+          "sample_sd": 0.008858465911242962,
+          "cv": 0.13467262365065316,
+          "jb": 0.9387251170210512,
+          "p_value": 0.625400797665607,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_12.xlsx",
+          "count": 12,
+          "mean": 0.08873333333333333,
+          "sample_sd": 0.006645618287581858,
+          "cv": 0.07489427070903672,
+          "jb": 0.47116884386553376,
+          "p_value": 0.7901089576678492,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        12
+      ]
+    },
+    {
+      "folder": "L30‑N300‑IC0.5%",
+      "ok": true,
+      "elapsed_seconds": 25.93,
+      "source_files": [
+        "20260531_CH5_可视化结果_96.xlsx",
+        "20260531_CH8_可视化结果_96.xlsx",
+        "20260726_CH8_可视化结果_96.xlsx",
+        "20260726_CH9_可视化结果_96.xlsx"
+      ],
+      "strict_count": 95,
+      "group_sizes": [
+        18,
+        18,
+        18,
+        12
+      ],
+      "group_stats": [
+        {
+          "mean": 0.05708888888888889,
+          "sample_sd": 0.006370140721401492,
+          "cv": 0.11158284642392649,
+          "jb": 0.8829158389453964,
+          "p_value": 0.6430981519703157
+        },
+        {
+          "mean": 0.07176666666666667,
+          "sample_sd": 0.0035942764959601787,
+          "cv": 0.05008281229856264,
+          "jb": 0.9528751447999378,
+          "p_value": 0.6209916939623843
+        },
+        {
+          "mean": 0.08527777777777779,
+          "sample_sd": 0.004461937795273361,
+          "cv": 0.05232239759929674,
+          "jb": 1.6679394301246977,
+          "p_value": 0.4343217261312185
+        },
+        {
+          "mean": 0.10124166666666667,
+          "sample_sd": 0.00662810247538784,
+          "cv": 0.06546812882101742,
+          "jb": 0.9336964445553206,
+          "p_value": 0.6269752440655996
+        }
+      ],
+      "remaining_strict_count": 29,
+      "selected_total": 66,
+      "umax_summary": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N300‑IC0.5%\\18_batch_20260915\\selected_groups_umax_summary.xlsx",
+      "group_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N300‑IC0.5%\\18_batch_20260915\\selected__groups_1_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N300‑IC0.5%\\18_batch_20260915\\selected__groups_2_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N300‑IC0.5%\\18_batch_20260915\\selected__groups_3_18.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N300‑IC0.5%\\18_batch_20260915\\selected__groups_4_12.xlsx"
+      ],
+      "marked_workbooks": [
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N300‑IC0.5%\\18_batch_20260915\\20260531_CH5_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N300‑IC0.5%\\18_batch_20260915\\20260531_CH8_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N300‑IC0.5%\\18_batch_20260915\\20260726_CH8_可视化结果_96_marked.xlsx",
+        "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N300‑IC0.5%\\18_batch_20260915\\20260726_CH9_可视化结果_96_marked.xlsx"
+      ],
+      "pptx": "F:\\Workbuddy_Workspace\\Peipei_Workspace\\实验分析结果\\L30‑N300‑IC0.5%\\18_batch_20260915\\selected_groups_growth_curves_2x9.pptx",
+      "excel_validation_groups": [
+        {
+          "file": "selected__groups_1_18.xlsx",
+          "count": 18,
+          "mean": 0.05708888888888889,
+          "sample_sd": 0.006370140721401492,
+          "cv": 0.11158284642392649,
+          "jb": 0.8829158389453964,
+          "p_value": 0.6430981519703157,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_2_18.xlsx",
+          "count": 18,
+          "mean": 0.07176666666666667,
+          "sample_sd": 0.0035942764959601787,
+          "cv": 0.05008281229856264,
+          "jb": 0.9528751447999378,
+          "p_value": 0.6209916939623843,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_3_18.xlsx",
+          "count": 18,
+          "mean": 0.08527777777777779,
+          "sample_sd": 0.004461937795273361,
+          "cv": 0.05232239759929674,
+          "jb": 1.6679394301246977,
+          "p_value": 0.4343217261312185,
+          "embedded_images": 1
+        },
+        {
+          "file": "selected__groups_4_12.xlsx",
+          "count": 12,
+          "mean": 0.10124166666666667,
+          "sample_sd": 0.00662810247538784,
+          "cv": 0.06546812882101742,
+          "jb": 0.9336964445553206,
+          "p_value": 0.6269752440655996,
+          "embedded_images": 1
+        }
+      ],
+      "ppt_validation_picture_counts": [
+        18,
+        18,
+        18,
+        12
+      ]
+    }
+  ],
+  "failures": [
+    {
+      "folder": "L30‑N300‑IC10%",
+      "error": "No qualifying group could be formed",
+      "elapsed_seconds": 0.3
+    }
+  ]
+}

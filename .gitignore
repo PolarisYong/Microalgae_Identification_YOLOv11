@@ -1,5 +1,40 @@
+# ---------------- 历史规则（保留） ----------------
 # 忽略所有 images 目录下的文件（但保留目录结构）
 dataset/*
 /dataset/
-generate_figures/*
-/generate_figures/
+
+# ---------------- 运行环境 ----------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---------------- 编辑器 / 工具 ----------------
+.idea/
+.vscode/
+.DS_Store
+.workbuddy/
+
+# ---------------- 日志 ----------------
+*.log
+_logs/
+
+# ---------------- 数据与产物（体积大，不入库） ----------------
+# data_analysis 的原始数据与处理结果工作区
+data_analysis/batch_grouping/data/
+data_analysis/batch_grouping/test_output_custom_group_B/
+data_analysis/_backup/
+data_analysis/模拟数据处理_part1/
+data_analysis/simdata_pipeline/_logs/
+data_analysis/ccf_chlorella/figures/
+data_analysis/exploratory/paper_figures/*.png
+
+# 训练/推理产物
+runs/*/weights/*.pt
+runs/*/*/weights/*.pt
+training_figures/
+
+# 中间结果与临时文件
+*.tmp
+~$*.xlsx

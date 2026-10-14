@@ -1,0 +1,38 @@
+# data_analysis —— 统一依赖清单
+#
+# 三个功能模块（exp_batch_aggregator / batch_grouping / ccf_chlorella）
+# 共用同一套依赖，只需创建一个 Conda 环境即可运行全部功能：
+#
+#   conda create -n lpr_dp python=3.11 pip -y -c defaults --override-channels
+#   conda activate lpr_dp
+#   python -m pip install -r requirements.txt
+#
+# 本清单由各模块 *.py 的实际 import 语句核对得出，仅列出真正被用到的包。
+# 目标 Python：3.11（已在 3.11.15 验证通过）
+
+# ---------------- 数值与统计 ----------------
+numpy>=1.26            # ccf_chlorella：RSM 建模、矩阵运算
+scipy>=1.11            # ccf_chlorella：scipy.stats（t 检验 / F 检验 / 分布）
+
+# ---------------- 绘图 ----------------
+matplotlib>=3.8        # ccf_chlorella：效应 Pareto 图 / 等高线图 / 交互作用图
+                       #   脚本内已用 matplotlib.use("Agg")，无需图形界面
+                       #   中文字体依赖系统自带 Microsoft YaHei / SimHei（Windows）
+
+# ---------------- 表格读写 ----------------
+pandas>=2.0            # exp_batch_aggregator：工况标记表解析
+openpyxl>=3.1          # 三个模块共用：.xlsx 读写、样式标记、图片嵌入
+xlrd>=2.0              # exp_batch_aggregator：读取旧版 .xls 工况标记表
+
+# ---------------- 图像与演示文稿 ----------------
+pillow>=10.0           # batch_grouping：PIL 合成生长曲线图、绘制标注
+python-pptx>=1.0       # batch_grouping：生成 2x9 版式汇总 PPT；simdata_pipeline：抽取指定页
+
+# ---------------------------------------------------------------------------
+# 说明：以下包曾出现在 batch_grouping/requirements.txt 中，但代码中并未 import，
+# 属于历史遗留（早期版本做过 ANOVA / 事后多重比较），已从统一清单中移除：
+#   statsmodels、seaborn、patsy、scikit-posthocs
+# 以下为 openpyxl 的传递依赖，无需显式安装：
+#   et_xmlfile、lxml
+# 若后续恢复统计检验功能，再按需加回即可。
+# ---------------------------------------------------------------------------
